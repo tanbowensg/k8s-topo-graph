@@ -11,9 +11,10 @@
       </header>
       <div id="dce-topo-graph-body">
         <div id="graph-canvas">
-          <div class="topo-node"></div>
-          <div class="topo-node"></div>
-          <div class="topo-node"></div>
+          <topo-node class="active" style="transform: translate(50px, 50px);"></topo-node>
+          <topo-node style="transform: translate(50px, 250px);"></topo-node>
+          <topo-node style="transform: translate(50px, 450px);"></topo-node>
+          <topo-node style="transform: translate(400px, 250px);"></topo-node>
         </div>
         <div id="code-section">
           <header id="code-header">
@@ -34,13 +35,13 @@
 </template>
 
 <script>
-// import Hello from './components/Hello'
+import TopoNode from './components/topo-node/topo-node'
 
 export default {
   name: 'app',
-  // components: {
-  //   Hello
-  // }
+  components: {
+    TopoNode
+  }
 }
 </script>
 
