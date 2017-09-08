@@ -1,0 +1,136 @@
+$graph-bg: #353535;
+$header-bg: #303030;
+$code-bg: #3b3b3b;
+$border-color: #252525;
+
+$header-height: 40px;
+
+// 拓扑图的大小是容器决定的
+#topo-graph-container {
+  height: 768px;
+  width: 1280px;
+}
+
+#dce-topo-graph {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+
+  background: $graph-bg;
+}
+
+#dce-topo-graph-header {
+  flex: 0 0 auto;
+  position: relative;
+	height: $header-height;
+  padding: 0 20px;
+
+  border-radius: 2px;
+	background-color: $header-bg;
+	box-shadow: 0 2px 0 0 rgba(0, 0, 0, 0.03), 0 1px 0 0 $border-color;
+
+  #app-name {
+    float: left;
+    height: $header-height;
+    line-height: $header-height;
+
+    color: white;
+    font-size: 14px;
+  }
+
+  #pages {
+    position: absolute;
+    display: inline-flex;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    height: 26px;
+    .page {
+      flex: 1;
+      display: inline-block;
+      width: 48px;
+      height: 26px;
+      line-height: 26px;
+
+      color: grey; // 实际上是总监的某个半透明颜色;
+      font-size: 14px;
+      border-radius: 4px;
+      text-align: center;
+      &.active {
+        color: white;
+        background: rgba(0,0,0,0.5);
+      }
+    }
+  }
+}
+
+#dce-topo-graph-body {
+  flex: 1;
+  display: flex;
+}
+
+#graph-canvas {
+  flex: 1 1 auto;
+}
+
+#code-section {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  width: 400px;
+
+  border: solid 1px $border-color;
+  #code-header {
+    flex: 0 0 auto;
+    height: 32px;
+    overflow: visible;
+    z-index: 1;
+    .code-tab {
+      float: left;
+      display: block;
+      width: 100px;
+      height: 32px;
+      line-height: 32px;
+
+      border-right: solid 1px $border-color;
+      font-size: 14px;
+      color: grey; // 实际上是总监的某个半透明颜色;
+      text-align: center;
+      &.active {
+        background: $code-bg;
+        color: white;
+        border-bottom: none;
+        // 这是为了遮住下面的边框
+        height: 33px;
+      }
+    }
+  }
+  #code-main {
+    flex: 1 1 auto;
+    border-top: solid 1px $border-color;
+    border-bottom: solid 1px $border-color;
+    background: $code-bg;
+  }
+  #code-footer {
+    height: 38px;
+    padding: 6px 10px;
+    .footer-btn {
+      display: inline-block;
+      width: 48px;
+      height: 26px;
+      line-height: 26px;
+
+      color: grey; // 实际上是总监的某个半透明颜色;
+      font-size: 14px;
+      border-radius: 3px;
+      box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.08);
+      text-align: center;
+      cursor: pointer;
+      &.active {
+        color: white;
+        background-color: rgba(255, 255, 255, 0.08);
+      }
+    }
+  }
+}
