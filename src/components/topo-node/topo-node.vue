@@ -3,31 +3,11 @@
     :style="{transform: transformValue}"
     v-stream:mousedown="mousedown$"
     v-stream:mouseup="mouseup$">
-    <header class="topo-node-header">mysql</header>
+    <header class="topo-node-header">{{info.name}}</header>
     <div class="topo-node-body">
-      <div class="line">
-        <span class="label">镜像</span>
-        <span class="content">mysql:1.10.0</span>
-      </div>
-      <div class="line">
-        <span class="label">实例数</span>
-        <span class="content">1</span>
-      </div>
-      <div class="line">
-        <span class="label">CPU 限制</span>
-        <span class="content">1 核</span>
-      </div>
-      <div class="line">
-        <span class="label">内存限制</span>
-        <span class="content">1G</span>
-      </div>
-      <div class="line">
-        <span class="label">访问方式</span>
-        <span class="content">主机端口</span>
-      </div>
-      <div class="line">
-        <span class="label">开放端口</span>
-        <span class="content">80/TCP,38443:443/TCP</span>
+      <div class="line" v-for="content in info.values">
+        <span class="label">{{content[0]}}</span>
+        <span class="content">{{content[1]}}</span>
       </div>
     </div>
   </div>
@@ -37,6 +17,7 @@
 
 export default {
   name: 'TopoNode',
+  props: ['info'],
   domStreams: ['mousedown$', 'mouseup$'],
   data(){
     return {

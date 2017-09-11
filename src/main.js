@@ -4,8 +4,10 @@ import Vue from 'vue'
 import App from './app'
 import Rx from 'rxjs/Rx'
 import VueRx from 'vue-rx';
+import lodash from 'lodash';
 
 window.Rx = Rx;
+window._ = lodash;
 
 Vue.config.productionTip = false
 
