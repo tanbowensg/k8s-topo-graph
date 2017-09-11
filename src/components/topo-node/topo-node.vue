@@ -55,7 +55,6 @@ export default {
     const mouseDrag$ = this.mousedown$.switchMap(() => {
       return mousemove$.takeUntil(this.mouseup$)
         .map(event => {
-          console.log(event)
           return {x: event.movementX, y: event.movementY}
         })
     })
