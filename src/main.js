@@ -2,8 +2,10 @@
 // (runtime-only or standalone) has been set in webpack.base.conf with an alias.
 import Vue from 'vue'
 import App from './app'
-import Rx from 'rxjs/Rx';
+import Rx from 'rxjs/Rx'
 import VueRx from 'vue-rx';
+
+window.Rx = Rx;
 
 Vue.config.productionTip = false
 

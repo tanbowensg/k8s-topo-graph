@@ -1,5 +1,8 @@
 <template>
-  <div class="topo-node">
+  <div class="topo-node"
+    :style="{transform: transformValue}"
+    v-stream:mousedown="mousedown$"
+    v-stream:mouseup="mouseup$">
     <header class="topo-node-header">mysql</header>
     <div class="topo-node-body">
       <div class="line">
@@ -34,6 +37,34 @@
 
 export default {
   name: 'TopoNode',
+  domStreams: ['mousedown$', 'mouseup$'],
+  data(){
+    return {
+      x: 0,
+      y: 0,
+    };
+  },
+  computed: {
+    transformValue() {
+      return `translate(${this.x}px, ${this.y}px)`
+    }
+  },
+  subscriptions() {
+    // {x: xxx, y: xxx}
+    const mousemove$ = Rx.Observable.fromEvent(document, 'mousemove');
+    const mouseDrag$ = this.mousedown$.switchMap(() => {
+      return mousemove$.takeUntil(this.mouseup$)
+        .map(event => {
+          console.log(event)
+          return {x: event.movementX, y: event.movementY}
+        })
+    })
+
+    this.$subscribeTo(mouseDrag$, movement => {
+      this.x = this.x + movement.x;
+      this.y = this.y + movement.y;
+    })
+  }
 }
 </script>
 
