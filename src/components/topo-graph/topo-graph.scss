@@ -75,6 +75,10 @@ $header-height: 40px;
   position: relative;
 }
 
+#canvas-lines {
+  pointer-events: none;
+}
+
 #code-section {
   flex: 0 0 auto;
   display: flex;
