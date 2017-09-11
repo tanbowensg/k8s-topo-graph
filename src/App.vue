@@ -1,15 +1,15 @@
 <template>
-  <topo-graph :yaml="yaml"></topo-graph>
+  <compose-topo :yaml="yaml"></compose-topo>
 </template>
 
 <script>
-import TopoGraph from './components/topo-graph/topo-graph'
+import ComposeTopo from './components/compose-topo/compose-topo'
 import yaml from './yaml'
 
 export default {
   name: 'app',
   components: {
-    TopoGraph
+    ComposeTopo
   },
   data() {
     return {

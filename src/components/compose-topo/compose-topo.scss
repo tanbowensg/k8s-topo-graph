@@ -6,12 +6,12 @@ $border-color: #252525;
 $header-height: 40px;
 
 // 拓扑图的大小是容器决定的
-#topo-graph-container {
+#compose-topo-container {
   height: 768px;
   width: 1280px;
 }
 
-#dce-topo-graph {
+#dce-compose-topo {
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -20,7 +20,7 @@ $header-height: 40px;
   background: $graph-bg;
 }
 
-#dce-topo-graph-header {
+#dce-compose-topo-header {
   flex: 0 0 auto;
   position: relative;
 	height: $header-height;
@@ -65,7 +65,7 @@ $header-height: 40px;
   }
 }
 
-#dce-topo-graph-body {
+#dce-compose-topo-body {
   flex: 1;
   display: flex;
 }

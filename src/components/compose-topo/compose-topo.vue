@@ -1,7 +1,7 @@
 <template>
-  <div id="topo-graph-container">
-    <div id="dce-topo-graph">
-      <header id="dce-topo-graph-header">
+  <div id="compose-topo-container">
+    <div id="dce-compose-topo">
+      <header id="dce-compose-topo-header">
         <div id="app-name">ndc/my-app</div>
         <ul id="pages">
           <li class="page active">服务</li><!--
@@ -9,7 +9,7 @@
        --><li class="page">存储</li>
         </ul>
       </header>
-      <div id="dce-topo-graph-body">
+      <div id="dce-compose-topo-body">
         <topo-canvas :yaml="yaml"></topo-canvas>
         <div id="code-section">
           <header id="code-header">
@@ -34,7 +34,7 @@ import yaml2json from 'js-yaml';
 import TopoCanvas from '../topo-canvas/topo-canvas';
 
 export default {
-  name: 'TopoGraph',
+  name: 'ComposeTopo',
   props: ['yaml'],
   components: {
     TopoCanvas
@@ -43,7 +43,7 @@ export default {
 </script>
 
 <style lang="scss">
-@import './topo-graph.scss';
+@import './compose-topo.scss';
 * {
   margin: 0;
   padding: 0;
