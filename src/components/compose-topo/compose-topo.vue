@@ -10,7 +10,7 @@
         </ul>
       </header>
       <div id="dce-compose-topo-body">
-        <topo-canvas :yaml="yaml"></topo-canvas>
+        <topo-canvas :nodes="deployments"></topo-canvas>
         <div id="code-section">
           <header id="code-header">
             <div class="code-tab active">YAML 编排</div><!--
@@ -38,6 +38,28 @@ export default {
   props: ['yaml'],
   components: {
     TopoCanvas
+  },
+  data() {
+    return {
+      json: yaml2json.safeLoadAll(this.yaml)
+    }
+  },
+  computed: {
+    deployments() {
+      // 处理各个节点要展示的数据
+      return _.map(this.json, deployment => {
+        return  {
+          name: deployment.metadata.name,
+          dependencies: _.get(deployment, 'metadata.annotations["io.daocloud.dce/depend-on"]', []),
+          values: [
+            ['镜像', _.get(deployment, 'spec.template.spec.containers[0].image', '')],
+            ['实例数', _.get(deployment, 'spec.replicas', 0)],
+            ['CPU 限制', _.get(deployment, 'spec.template.spec.containers[0].resources.limits.cpu', 0)],
+            ['内存限制', _.get(deployment, 'spec.template.spec.containers[0].resources.limits.memory', 0)],
+          ],
+        };
+      });
+    },
   },
 }
 </script>

@@ -43,7 +43,18 @@ export default {
     this.$subscribeTo(mouseDrag$, movement => {
       this.x = this.x + movement.x;
       this.y = this.y + movement.y;
+      this.emitMovement();
     })
+  },
+  methods: {
+    emitMovement() {
+      const payload = {
+        name: this.info.name,
+        x: this.x,
+        y: this.y
+      };
+      this.$emit('move', payload);
+    }
   }
 }
 </script>

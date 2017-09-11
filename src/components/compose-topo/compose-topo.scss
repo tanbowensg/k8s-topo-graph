@@ -77,6 +77,7 @@ $header-height: 40px;
 
 #canvas-lines {
   pointer-events: none;
+  position: absolute;
 }
 
 #code-section {
