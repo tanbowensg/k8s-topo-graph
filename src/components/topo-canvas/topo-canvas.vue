@@ -6,8 +6,6 @@
         :info="node"
         :class="{active: activeNodeList[node.name]}"
         :style="convertPositionToTransform(nodePositions[node.name])"
-        :parentWidth="canvasWidth"
-        :parentHeight="canvasHeight"
         :zoomRatio="zoomRatio"
         @move="onNodeMove"
         @mousedown="onNodeMousedown"></topo-node>
@@ -72,8 +70,6 @@ export default {
       nodePositions,
       nodeLines,
       zoomRatio: 1,
-      canvasWidth: 0,
-      canvasHeight: 0,
     }
   },
   computed: {
@@ -97,9 +93,6 @@ export default {
       return `${transform}${height}${width}`;
     },
   },
-  mounted() {
-    this.getCanvasSize();
-  },
   methods: {
     convertToSvgPath(x1, y1, x2, y2) {
       return `M${x1},${y1}L${x2},${y2}`;
@@ -107,10 +100,6 @@ export default {
     // 把节点的位置转换成 transform 属性
     convertPositionToTransform({x, y}) {
       return `transform: translate(${x}px, ${y}px)`
-    },
-    getCanvasSize() {
-      this.canvasWidth = _.get(this, '$refs.canvasContainer.clientWidth');
-      this.canvasHeight = _.get(this, '$refs.canvasContainer.clientHeight');
     },
     // 更新移动的节点的位置
     onNodeMove({name, x, y}) {
@@ -124,19 +113,6 @@ export default {
       this.activeNodeList[nodeName] = true;
     }
   },
-  watch: {
-    zoomRatio() {
-      this.$nextTick(() => {
-        this.getCanvasSize();
-        // 可能不需要
-        // // 按最新的比例更新一下所有节点的位置
-        // _.forEach(this.nodePositions, (position, index) => {
-        //   this.nodePositions[index].x = position.x * this.zoomRatio;
-        //   this.nodePositions[index].y = position.y * this.zoomRatio;
-        // });
-      });
-    }
-  }
 }
 </script>
 

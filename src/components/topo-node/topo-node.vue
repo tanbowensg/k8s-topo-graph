@@ -19,12 +19,14 @@
 <script>
 export default {
   name: 'TopoNode',
-  props: ['info', 'parentWidth', 'parentHeight', 'zoomRatio'],
+  props: ['info', 'zoomRatio'],
   domStreams: ['mousedown$'],
   data(){
     return {
       x: 0,
       y: 0,
+      maxX: Infinity,
+      maxY: Infinity,
     };
   },
   computed: {
@@ -35,12 +37,9 @@ export default {
     minY() {
       return 0;
     },
-    maxX() {
-      return this.parentWidth - this.$refs.topoNode.clientWidth - 0;
-    },
-    maxY() {
-      return this.parentHeight - this.$refs.topoNode.clientHeight - 0;
-    },
+  },
+  mounted() {
+    this.getMaxSize();
   },
   subscriptions() {
     // {x: xxx, y: xxx}
@@ -81,6 +80,12 @@ export default {
     this.$subscribeTo(this.mousedown$, this.emitMousedown);
   },
   methods: {
+    getMaxSize() {
+      const parentWidth = this.$refs.topoNode.parentElement.clientWidth;
+      this.maxX = parentWidth - this.$refs.topoNode.clientWidth - 0;
+      const parentHeight = this.$refs.topoNode.parentElement.clientHeight;
+      this.maxY = parentHeight - this.$refs.topoNode.clientHeight - 0;
+    },
     emitMovement() {
       const payload = {
         name: this.info.name,
@@ -91,6 +96,11 @@ export default {
     },
     emitMousedown() {
       this.$emit('mousedown', this.info.name);
+    }
+  },
+  watch: {
+    zoomRatio() {
+      this.$nextTick(this.getMaxSize);
     }
   }
 }
