@@ -1,5 +1,6 @@
 <template>
   <div id="graph-canvas">
+    <zoom-ratio v-model="zoomRatio"></zoom-ratio>
     <div id="canvas-container" :style="canvasStyle" ref="canvasContainer">
       <topo-node v-for="node in nodes"
         :key="node.name"
@@ -18,7 +19,6 @@
           stroke-linecap="round">
         </path>
       </svg>
-      <input id="canvas-zoom-ratio" type="number" v-model="zoomRatio">
     </div>
   </div>
 </template>
@@ -26,13 +26,15 @@
 <script>
 import yaml2json from 'js-yaml';
 import TopoNode from '../topo-node/topo-node';
+import ZoomRatio from '../zoom-ratio/zoom-ratio';
 import { PivotOffsetY, PivotOffsetXLarge, PivotOffsetXSmall } from '../../const.js'
 
 export default {
   name: 'TopoCanvas',
   props: ['nodes'],
   components: {
-    TopoNode
+    TopoNode,
+    ZoomRatio
   },
   data() {
     const activeNodeList = {};
@@ -93,6 +95,9 @@ export default {
       return `${transform}${height}${width}`;
     },
   },
+  created() {
+
+  },
   methods: {
     convertToSvgPath(x1, y1, x2, y2) {
       return `M${x1},${y1}L${x2},${y2}`;
@@ -117,4 +122,10 @@ export default {
 </script>
 
 <style lang="scss">
+#graph-canvas #zoom-ratio {
+  position: absolute;
+  z-index: 1;
+  right: 10px;
+  top: 10px;
+}
 </style>
