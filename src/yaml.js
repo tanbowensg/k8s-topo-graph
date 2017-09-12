@@ -31,6 +31,9 @@ metadata:
   name: tuopu-redis
   labels:
     k8s-app: tuopu-mysql
+  annotations:
+    io.daocloud.dce/depend-on:
+    - tuopu-mysql
 spec:
   replicas: 1
   strategy:
@@ -58,6 +61,9 @@ metadata:
   name: tuopu-config-center
   labels:
     k8s-app: tuopu-config-center
+  annotations:
+    io.daocloud.dce/depend-on:
+    - tuopu-2048
 spec:
   replicas: 1
   strategy:
@@ -73,6 +79,33 @@ spec:
       containers:
       - image: daocloud.io/config-center:latest
         name: tuopu-config-center
+        resources:
+          limits:
+            cpu: 5
+            memory: 1073231824
+
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: tuopu-2048
+  labels:
+    k8s-app: tuopu-2048
+spec:
+  replicas: 1
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        k8s-app: tuopu-2048
+    spec:
+      containers:
+      - image: daocloud.io/2048:latest
+        name: tuopu-2048
         resources:
           limits:
             cpu: 5
