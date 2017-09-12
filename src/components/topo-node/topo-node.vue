@@ -1,7 +1,6 @@
 <template>
   <div class="topo-node"
     ref="topoNode"
-    :style="{transform: transformValue}"
     v-stream:mousedown="mousedown$">
     <header class="topo-node-header">
       <div class="pivot left" v-if="info.hasDependency"></div>
@@ -20,26 +19,28 @@
 <script>
 export default {
   name: 'TopoNode',
-  props: ['info'],
+  props: ['info', 'parentWidth', 'parentHeight', 'zoomRatio'],
   domStreams: ['mousedown$'],
   data(){
     return {
       x: 0,
       y: 0,
-      maxX: Infinity,
-      maxY: Infinity,
     };
   },
   computed: {
-    transformValue() {
-      return `translate(${this.x}px, ${this.y}px)`
-    }
-  },
-  mounted() {
-    // 最大 X 和 Y就是节点可以拖动的范围上限
-    // 注意：额外减 2 的是阴影
-    this.maxX = this.$refs.topoNode.parentElement.clientWidth - this.$refs.topoNode.clientWidth - 2;
-    this.maxY = this.$refs.topoNode.parentElement.clientHeight - this.$refs.topoNode.clientHeight - 2;
+    minX() {
+      // 本来这里的 0 应该是 6 * this.zoomRatio，6 是阴影宽度。但是太麻烦了，就先不减了
+      return 0;
+    },
+    minY() {
+      return 0;
+    },
+    maxX() {
+      return this.parentWidth - this.$refs.topoNode.clientWidth - 0;
+    },
+    maxY() {
+      return this.parentHeight - this.$refs.topoNode.clientHeight - 0;
+    },
   },
   subscriptions() {
     // {x: xxx, y: xxx}
@@ -53,14 +54,15 @@ export default {
     })
     .scan((acc, {x, y}) => {
       let finalX, finalY;
-      const newX = acc.x + x;
-      const newY = acc.y + y;
-        // 以免超出上限和下限
-      if (newX < 0) finalX = 0;
+      // 要算上缩放比
+      const newX = acc.x + x / this.zoomRatio;
+      const newY = acc.y + y / this.zoomRatio;
+      // 以免超出上限和下限
+      if (newX < this.minX) finalX = this.minX;
       else if (newX > this.maxX) finalX = this.maxX;
       else finalX = newX;
 
-      if (newY < 0) finalY = 0;
+      if (newY < this.minY) finalY = this.minY;
       else if (newY > this.maxY) finalY = this.maxY;
       else finalY = newY;
 
@@ -68,7 +70,7 @@ export default {
         x: finalX,
         y: finalY,
       }
-    }, {x: 0, y: 0})
+    }, {x: this.minX, y: this.minY})
 
     this.$subscribeTo(mouseDrag$, position => {
       this.x = position.x;

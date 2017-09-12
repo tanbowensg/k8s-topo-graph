@@ -75,6 +75,24 @@ $header-height: 40px;
   position: relative;
 }
 
+#canvas-zoom-ratio {
+  position: absolute;
+  z-index: 100;
+  right: 0;
+  top: 0;
+}
+
+#canvas-container {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  // 这三个注释的属性写在模板里，由 js 控制
+  // height: 150%;
+  // width: 150%;
+  // transform: translate(-50%, -50%) scale(0.666666);
+  transform-origin: center;
+}
+
 #canvas-lines {
   pointer-events: none;
   position: absolute;

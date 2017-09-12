@@ -1,20 +1,27 @@
 <template>
   <div id="graph-canvas">
-    <topo-node v-for="node in nodes"
-      :key="node.name"
-      :info="node"
-      :class="{active: activeNodeList[node.name]}"
-      @move="renewNodesPositions"
-      @mousedown="onNodeMousedown"></topo-node>
-    <svg id="canvas-lines" xmlns="http://www.w3.org/2000/svg" version="1.1" class="viewport"
-         width="100%" height="100%">
-      <path v-for="l in lines" :d="convertToSvgPath(l[0], l[1], l[2], l[3])"
-        stroke="#fff"
-        opacity="0.6"
-        stroke-width="2"
-        stroke-linecap="round">
-      </path>
-    </svg>
+    <div id="canvas-container" :style="canvasStyle" ref="canvasContainer">
+      <topo-node v-for="node in nodes"
+        :key="node.name"
+        :info="node"
+        :class="{active: activeNodeList[node.name]}"
+        :style="convertPositionToTransform(nodePositions[node.name])"
+        :parentWidth="canvasWidth"
+        :parentHeight="canvasHeight"
+        :zoomRatio="zoomRatio"
+        @move="onNodeMove"
+        @mousedown="onNodeMousedown"></topo-node>
+      <svg id="canvas-lines" xmlns="http://www.w3.org/2000/svg" version="1.1" class="viewport"
+          width="100%" height="100%">
+        <path v-for="l in lines" :d="convertToSvgPath(l[0], l[1], l[2], l[3])"
+          stroke="#fff"
+          opacity="0.6"
+          stroke-width="2"
+          stroke-linecap="round">
+        </path>
+      </svg>
+      <input id="canvas-zoom-ratio" type="number" v-model="zoomRatio">
+    </div>
   </div>
 </template>
 
@@ -64,6 +71,9 @@ export default {
       activeNodeList,
       nodePositions,
       nodeLines,
+      zoomRatio: 1,
+      canvasWidth: 0,
+      canvasHeight: 0,
     }
   },
   computed: {
@@ -80,13 +90,30 @@ export default {
         return linePosition;
       })
     },
+    canvasStyle() {
+      const transform = `transform: translate(-50%, -50%) scale(${this.zoomRatio});`;
+      const height = `height: ${1 / this.zoomRatio * 100}%;`;
+      const width = `width: ${1 / this.zoomRatio * 100}%;`;
+      return `${transform}${height}${width}`;
+    },
+  },
+  mounted() {
+    this.getCanvasSize();
   },
   methods: {
     convertToSvgPath(x1, y1, x2, y2) {
       return `M${x1},${y1}L${x2},${y2}`;
     },
-    renewNodesPositions({name, x, y}) {
-      // 更新移动的节点的位置
+    // 把节点的位置转换成 transform 属性
+    convertPositionToTransform({x, y}) {
+      return `transform: translate(${x}px, ${y}px)`
+    },
+    getCanvasSize() {
+      this.canvasWidth = _.get(this, '$refs.canvasContainer.clientWidth');
+      this.canvasHeight = _.get(this, '$refs.canvasContainer.clientHeight');
+    },
+    // 更新移动的节点的位置
+    onNodeMove({name, x, y}) {
       this.nodePositions[name].x = x;
       this.nodePositions[name].y = y;
     },
@@ -95,6 +122,19 @@ export default {
         this.activeNodeList[index] = false;
       })
       this.activeNodeList[nodeName] = true;
+    }
+  },
+  watch: {
+    zoomRatio() {
+      this.$nextTick(() => {
+        this.getCanvasSize();
+        // 可能不需要
+        // // 按最新的比例更新一下所有节点的位置
+        // _.forEach(this.nodePositions, (position, index) => {
+        //   this.nodePositions[index].x = position.x * this.zoomRatio;
+        //   this.nodePositions[index].y = position.y * this.zoomRatio;
+        // });
+      });
     }
   }
 }
