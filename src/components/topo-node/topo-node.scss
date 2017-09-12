@@ -1,6 +1,14 @@
+// 这是连线的点相对于topo-node-header的偏移量，不算 2px 的边框的
+$topoNodeHeaderHeight: 28px;
+$topoNodeHeaderWidth: 240px;
+$pivotWidth: 4px;
+$pivotOffsetY: ($topoNodeHeaderHeight - $pivotWidth) / 2;
+$pivotOffsetXSmall: 10px;
+$pivotOffsetXLarge: $topoNodeHeaderWidth - $pivotOffsetXSmall - $pivotWidth;
+
 .topo-node {
   position: absolute;
-  width: 244px;
+  width: $topoNodeHeaderWidth + 4px;// 加边框
 
   border: 2px solid #353535; 
   border-radius: 6px;
@@ -14,12 +22,27 @@
 }
 
 .topo-node-header {
-	height: 28px;
+  position: relative;
+	height: $topoNodeHeaderHeight;
   line-height: 28px;
   font-size: 14px;
   color: white;
   text-align: center;
 	background-color: #585858;
+  .pivot {
+    position: absolute;
+    top: $pivotOffsetY;
+    height: $pivotWidth;
+    width: $pivotWidth;
+    border-radius: $pivotWidth / 2;
+    background: white;
+    &.left {
+      left: $pivotOffsetXSmall;
+    }
+    &.right {
+      right: $pivotOffsetXSmall;
+    }
+  }
 }
 
 .topo-node-body {

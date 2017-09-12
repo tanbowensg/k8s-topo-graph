@@ -3,7 +3,11 @@
     :style="{transform: transformValue}"
     v-stream:mousedown="mousedown$"
     v-stream:mouseup="mouseup$">
-    <header class="topo-node-header">{{info.name}}</header>
+    <header class="topo-node-header">
+      <div class="pivot left" v-if="info.hasDependency"></div>
+      <div class="pivot right" v-if="info.isDependency"></div>
+      <span>{{info.name}}</span>
+    </header>
     <div class="topo-node-body">
       <div class="line" v-for="content in info.values">
         <span class="label">{{content[0]}}</span>

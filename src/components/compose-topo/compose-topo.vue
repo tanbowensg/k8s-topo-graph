@@ -50,21 +50,21 @@ export default {
         return _.get(deployment, 'metadata.annotations["io.daocloud.dce/depend-on"]', []);
       }
 
-      // // 先取出所有服务的依赖，用于判断一个服务是否有依赖
-      // const allDependencies = _.reduce(this.json, (all, deployment) => {
-      //   const dependencies = getDeploymentDependencies(deployment);
-      //   return all.concat(dependencies)
-      // }, [])
+      // 先取出所有服务的依赖，用于判断一个服务是否有依赖
+      const allDependencies = _.reduce(this.json, (all, deployment) => {
+        const dependencies = getDeploymentDependencies(deployment);
+        return all.concat(dependencies)
+      }, [])
 
       // 处理各个节点要展示的数据
       return _.map(this.json, deployment => {
         return  {
           name: deployment.metadata.name,
           dependencies: getDeploymentDependencies(deployment),
-          // // 是否拥有依赖
-          // hasDependency: getDeploymentDependencies(deployment).length > 0,
-          // // 是否是其他节点的依赖
-          // isDependency: allDependencies.indexOf(deployment.metadata.name) > -1,
+          // 是否拥有依赖
+          hasDependency: getDeploymentDependencies(deployment).length > 0,
+          // 是否是其他节点的依赖
+          isDependency: allDependencies.indexOf(deployment.metadata.name) > -1,
           values: [
             ['镜像', _.get(deployment, 'spec.template.spec.containers[0].image', '')],
             ['实例数', _.get(deployment, 'spec.replicas', 0)],

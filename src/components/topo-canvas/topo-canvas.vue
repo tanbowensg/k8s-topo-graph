@@ -16,11 +16,7 @@
 <script>
 import yaml2json from 'js-yaml';
 import TopoNode from '../topo-node/topo-node';
-
-// 这是连线的点相对于每个节点左上角的偏移量
-const PivotOffsetY = 14;
-const PivotOffsetXLarge = 228;
-const PivotOffsetXSmall = 12;
+import { PivotOffsetY, PivotOffsetXLarge, PivotOffsetXSmall } from '../../const.js'
 
 export default {
   name: 'TopoCanvas',
