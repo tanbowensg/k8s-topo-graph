@@ -1,6 +1,11 @@
 <template>
   <div id="graph-canvas">
-    <topo-node v-for="node in nodes" :key="node.name" :info="node" @move="renewNodesPositions"></topo-node>
+    <topo-node v-for="node in nodes"
+      :key="node.name"
+      :info="node"
+      :class="{active: activeNodeList[node.name]}"
+      @move="renewNodesPositions"
+      @mousedown="onNodeMousedown"></topo-node>
     <svg id="canvas-lines" xmlns="http://www.w3.org/2000/svg" version="1.1" class="viewport"
          width="100%" height="100%">
       <path v-for="l in lines" :d="convertToSvgPath(l[0], l[1], l[2], l[3])"
@@ -25,6 +30,11 @@ export default {
     TopoNode
   },
   data() {
+    const activeNodeList = {};
+    _.forEach(this.nodes, n => {
+      activeNodeList[n.name] = false;
+    });
+
     // 记录所有节点的位置，用来划线。
     // 注意：这里的位置是每个节点左上角的位置，没有加偏移量
     const nodePositions = {};
@@ -49,7 +59,9 @@ export default {
       const sides = _.map(dependencies, dependency => [dependent, dependency]);
       nodeLines = nodeLines.concat(sides);
     });
+    
     return {
+      activeNodeList,
       nodePositions,
       nodeLines,
     }
@@ -78,6 +90,12 @@ export default {
       this.nodePositions[name].x = x;
       this.nodePositions[name].y = y;
     },
+    onNodeMousedown(nodeName) {
+      _.forEach(this.activeNodeList, (isActive, index) => {
+        this.activeNodeList[index] = false;
+      })
+      this.activeNodeList[nodeName] = true;
+    }
   }
 }
 </script>

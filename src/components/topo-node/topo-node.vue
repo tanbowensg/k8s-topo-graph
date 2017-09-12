@@ -75,6 +75,8 @@ export default {
       this.y = position.y;
       this.emitMovement();
     })
+
+    this.$subscribeTo(this.mousedown$, this.emitMousedown);
   },
   methods: {
     emitMovement() {
@@ -84,6 +86,9 @@ export default {
         y: this.y
       };
       this.$emit('move', payload);
+    },
+    emitMousedown() {
+      this.$emit('mousedown', this.info.name);
     }
   }
 }
