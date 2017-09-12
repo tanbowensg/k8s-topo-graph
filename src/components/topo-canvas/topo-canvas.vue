@@ -3,8 +3,12 @@
     <topo-node v-for="node in nodes" :key="node.name" :info="node" @move="renewNodesPositions"></topo-node>
     <svg id="canvas-lines" xmlns="http://www.w3.org/2000/svg" version="1.1" class="viewport"
          width="100%" height="100%">
-      <path v-for="l in lines" :d="convertToSvgPath(l[0], l[1], l[2], l[3])" stroke="#fff" stroke-width="1.1" opacity="0.6"
-      ></path>
+      <path v-for="l in lines" :d="convertToSvgPath(l[0], l[1], l[2], l[3])"
+        stroke="#fff"
+        opacity="0.6"
+        stroke-width="2"
+        stroke-linecap="round">
+      </path>
     </svg>
   </div>
 </template>
