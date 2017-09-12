@@ -29,13 +29,15 @@ export default {
     TopoNode
   },
   data() {
-    // 记录所有节点的位置，用来划线，这是加了偏移量的
+    // 记录所有节点的位置，用来划线。
+    // 注意：这里的位置是每个节点左上角的位置，没有加偏移量
     const nodePositions = {};
     _.forEach(this.nodes, n => {
-      nodePositions[n.name] = {x: PivotOffsetXLarge, y: PivotOffsetY};
+      nodePositions[n.name] = {x: 0, y: 0};
     });
 
     // 记录节点的依赖图
+    // 形如{dependent: [dependency1,dependency2]}
     const dependencyGraph = {};
     // 这里和上面我总共遍历了两次，其实可以合并。但我不合并的理由是看起来更清楚一点，而且对性能影响不大。
     _.forEach(this.nodes, n => {
@@ -44,7 +46,8 @@ export default {
       }
     })
 
-    // 这是要画的所有节点之间的线，根据 dependencyGraph 得到
+    // 这是要画的所有节点之间的线的关系，根据 dependencyGraph 得到
+    // 形如[[dependent, dependency],[dependent, dependency],[dependent, dependency]]
     let nodeLines = [];
     _.forEach(dependencyGraph, (dependencies, dependent) => {
       const sides = _.map(dependencies, dependency => [dependent, dependency]);
@@ -61,10 +64,11 @@ export default {
       return _.map(this.nodeLines, ([dependent, dependency]) => {
         // 形如[x1, y1, x2, y2]
         const linePosition = [0, 0, 0, 0];
-        linePosition[0] = this.nodePositions[dependent].x
-        linePosition[1] = this.nodePositions[dependent].y
-        linePosition[2] = this.nodePositions[dependency].x
-        linePosition[3] = this.nodePositions[dependency].y
+        // dependent 要加小的x 偏移量，dependency要加大的
+        linePosition[0] = this.nodePositions[dependent].x + PivotOffsetXSmall;
+        linePosition[1] = this.nodePositions[dependent].y + PivotOffsetY;
+        linePosition[2] = this.nodePositions[dependency].x + PivotOffsetXLarge;
+        linePosition[3] = this.nodePositions[dependency].y + PivotOffsetY;
         return linePosition;
       })
     },
@@ -75,9 +79,8 @@ export default {
     },
     renewNodesPositions({name, x, y}) {
       // 更新移动的节点的位置
-      // TODO：先假设连接点都在右上
-      this.nodePositions[name].x = x + PivotOffsetXLarge;
-      this.nodePositions[name].y = y + PivotOffsetXSmall;
+      this.nodePositions[name].x = x;
+      this.nodePositions[name].y = y;
     },
   }
 }
