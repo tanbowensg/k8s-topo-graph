@@ -19,12 +19,10 @@
 <script>
 export default {
   name: 'TopoNode',
-  props: ['info', 'zoomRatio'],
+  props: ['info', 'zoomRatio' ,'x', 'y'],
   domStreams: ['mousedown$'],
   data(){
     return {
-      x: 0,
-      y: 0,
       maxX: Infinity,
       maxY: Infinity,
     };
@@ -69,12 +67,10 @@ export default {
         x: finalX,
         y: finalY,
       }
-    }, {x: this.minX, y: this.minY})
+    }, {x: this.x, y: this.y})
 
-    this.$subscribeTo(mouseDrag$, position => {
-      this.x = position.x;
-      this.y = position.y;
-      this.emitMovement();
+    this.$subscribeTo(mouseDrag$, newPosition => {
+      this.emitMovement(newPosition);
     })
 
     this.$subscribeTo(this.mousedown$, this.emitMousedown);
@@ -86,11 +82,12 @@ export default {
       const parentHeight = this.$refs.topoNode.parentElement.clientHeight;
       this.maxY = parentHeight - this.$refs.topoNode.clientHeight - 0;
     },
-    emitMovement() {
+    emitMovement(newPosition) {
+      // 只要通知最后位移的距离就可以了
       const payload = {
         name: this.info.name,
-        x: this.x,
-        y: this.y
+        x: newPosition.x - this.x,
+        y: newPosition.y - this.y
       };
       this.$emit('move', payload);
     },

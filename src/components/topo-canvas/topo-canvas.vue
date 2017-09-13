@@ -2,12 +2,14 @@
   <div id="graph-canvas">
     <zoom-ratio v-model="zoomRatio"></zoom-ratio>
     <div id="canvas-container" :style="canvasStyle" ref="canvasContainer">
-      <topo-node v-for="node in nodes"
+      <topo-node v-for="node in nodes" v-if="isReady"
         :key="node.name"
         :info="node"
         :class="{active: activeNodeList[node.name]}"
         :style="convertPositionToTransform(nodePositions[node.name])"
         :zoomRatio="zoomRatio"
+        :x="nodePositions[node.name].x"
+        :y="nodePositions[node.name].y"
         @move="onNodeMove"
         @mousedown="onNodeMousedown"></topo-node>
       <svg id="canvas-lines" xmlns="http://www.w3.org/2000/svg" version="1.1" class="viewport"
@@ -70,8 +72,12 @@ export default {
     return {
       activeNodeList,
       nodePositions,
+      dependencyGraph,
       nodeLines,
       zoomRatio: 1,
+      // 这个 isReady 只有在 mounted 之后才会设为 true
+      // 目的是为了让画布计算出每个节点的位置后，再创建节点
+      isReady: false
     }
   },
   computed: {
@@ -95,8 +101,99 @@ export default {
       return `${transform}${height}${width}`;
     },
   },
-  created() {
+  mounted() {
+    // 计算出每个节点的初始坐标
+    const computeInitNodePosition = (nodes, dependencyGraph) => {
+      // 计算每个节点的依赖层级
+      function computeDependencyLevel(graph, nodes) {
+        const allNodesName = _.map(nodes, node => node.name);
+        // memoTable 是保存每个节点依赖层级的表
+        const memoTable = {};
+        // nodesParent 保存每个节点的父节点
+        const nodesParent = {};
+        // yaml 是不会有循环依赖的，所以这里也不考虑环
+        _.forEach(graph, (dependencies, node) => {
+          if (!memoTable[node]) memoTable[node] = 0;
+          if (!nodesParent[node]) nodesParent[node] = null;
+          _.forEach(dependencies, dependency => {
+            // 父节点是会变的
+            nodesParent[dependency] = node;
+            // 当前节点的依赖等级在它父节点的基础上加一
+            memoTable[dependency] = memoTable[node] + 1
+          })
+        });
+        // nodesParent 是动态改变的。memoTable 保存只是当时这个节点的层级。
+        // 所以最后要根据 nodesParent 和 memoTable 重新计算依赖等级
+        //  TODO：有点 magic，这个函数能运行，但我也不知道为什么能运行
+        const result = {};
+        _.forEach(allNodesName, node => {
+          const parent = nodesParent[node];
+          if (!parent) {
+            // 表示它是顶级节点
+            result[node] = 0;
+          } else {
+            // 否则就查表，每个节点的依赖等级在它父节点基础上加一
+            result[node] = memoTable[parent] + 1;
+          }
+        });
+        return result;
+      }
+      
+      // 计算整个依赖图作为一个二维数组的大小（列数和行数）
+      function computeDependencySize(dependencyLevel) {
+        const array = _.toArray(dependencyLevel)
+        // 二维数组的长度，表示画布中的列数
+        const x = _.max(array) + 1;
+        // 二维数组的深度，表示画布中的行数
+        const y = _.chain(array).countBy().toPairs().max(_.last).head().toNumber().value() + 1;
+        return [x, y];
+      }
 
+      // 把画布分割成 x * y 块，返回一个 x * y 的数组，每个元素是每一块的中点
+      const divideCanvas = ([x, y]) => {
+        // const 2dArray = _.map(Array(x), () => Array(y));
+        const canvasHeight = this.$refs.canvasContainer.clientHeight;
+        const canvasWidth = this.$refs.canvasContainer.clientWidth;
+        const xList = _.map(Array(x),
+          (v, i) => canvasWidth / x * (i + 1)  - canvasWidth / x / 2 );
+        const yList = _.map(Array(y),
+          (v, i) => canvasHeight / y * (i + 1) - canvasHeight / y / 2 );
+        return _.map(Array(x), (v, i) => {
+          return _.map(Array(y), (vv, j) => [xList[i], yList[j]]);
+        });
+      }
+
+      // 把每块画布的坐标映射到每个节点上
+      function mapToCoodinateToNodes (dependencyLevel, canvasCoodinateSystem) {
+        const nodesCoodinate = {};
+        const columesNumber = canvasCoodinateSystem.length;
+        const nodeColumns = _.map(Array(columesNumber), () => []);
+
+        _.forEach(dependencyLevel, (level, node) => {
+          // columesNumber 不是数组长度，减了 1 才是
+          nodeColumns[(columesNumber - 1) - level].push(node);
+        });
+
+        _.forEach(nodeColumns, (column, i) => {
+          _.forEach(column, (node, j) => {
+            let [x, y] = canvasCoodinateSystem[i][j];
+            // 还要把中心对齐
+            // TODO：这里就假装每个节点宽244，高120
+            x = x - 244 / 2;
+            y = y - 120 / 2;
+            nodesCoodinate[node] = {x, y};
+          })
+        })
+        return nodesCoodinate
+      }
+
+      const dependencyLevel = computeDependencyLevel(this.dependencyGraph, nodes);
+      const dependencySize = computeDependencySize(dependencyLevel)
+      const canvasCoodinateSystem = divideCanvas(dependencySize);
+      return mapToCoodinateToNodes(dependencyLevel, canvasCoodinateSystem);
+    }
+    this.nodePositions = computeInitNodePosition(this.nodes, this.dependencyGraph);
+    this.isReady = true;
   },
   methods: {
     convertToSvgPath(x1, y1, x2, y2) {
@@ -108,8 +205,8 @@ export default {
     },
     // 更新移动的节点的位置
     onNodeMove({name, x, y}) {
-      this.nodePositions[name].x = x;
-      this.nodePositions[name].y = y;
+      this.nodePositions[name].x = this.nodePositions[name].x + x;
+      this.nodePositions[name].y = this.nodePositions[name].y + y;
     },
     onNodeMousedown(nodeName) {
       _.forEach(this.activeNodeList, (isActive, index) => {
