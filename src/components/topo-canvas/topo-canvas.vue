@@ -126,7 +126,6 @@ export default {
         // 所以最后要根据 nodesParent 和 memoTable 重新计算依赖等级
         // 但是首先要对 memoTable 进行排序，先计算层级低的，再计算层级高的
         const memoTableSorted = _.chain(memoTable).toPairs().sortBy(_.last).value();
-        console.log(memoTableSorted)
         const result = {};
         _.forEach(memoTableSorted, ([node, level], index) => {
           const parent = nodesParent[node];
@@ -147,7 +146,6 @@ export default {
       // 计算整个依赖图作为一个二维数组的大小（列数和行数）
       function computeDependencySize(dependenciesLevel) {
         const array = _.toArray(dependenciesLevel)
-        console.log(array, array)
         // 二维数组的长度，表示画布中的列数
         const x = _.max(array) + 1;
         // 二维数组的深度，表示画布中的行数
@@ -157,16 +155,36 @@ export default {
 
       // 把画布分割成 x * y 块，返回一个 x * y 的数组，每个元素是每一块的中点
       const divideCanvas = ([x, y]) => {
-        // const 2dArray = _.map(Array(x), () => Array(y));
+        // 求近似的缩放率
+        function computeRatio(current, target) {
+          const ratio = current / target;
+          if (ratio < 0.75) return 0.5;
+          if (ratio >= 0.75 && ratio < 1) return 0.75;
+          if (ratio >= 1) return 1;
+        }
+        // TODO：这里就假装每个节点宽244，高120
+        const requireWidth = x * 244;
+        const requireHeight = y * 120;
         const canvasHeight = this.$refs.canvasContainer.clientHeight;
         const canvasWidth = this.$refs.canvasContainer.clientWidth;
+        const ratio = _.min([computeRatio(canvasHeight, requireHeight), computeRatio(canvasWidth, requireWidth)]);
+        // 先算算预期需要多大画布
+        const targetHeight = canvasHeight / ratio;
+        const targetWidth = canvasWidth / ratio;
+
         const xList = _.map(Array(x),
-          (v, i) => canvasWidth / x * (i + 1)  - canvasWidth / x / 2 );
+          (v, i) => targetWidth / x * (i + 1)  - targetWidth / x / 2 );
         const yList = _.map(Array(y),
-          (v, i) => canvasHeight / y * (i + 1) - canvasHeight / y / 2 );
-        return _.map(Array(x), (v, i) => {
+          (v, i) => targetHeight / y * (i + 1) - targetHeight / y / 2 );
+        
+        const canvasDivisions = _.map(Array(x), (v, i) => {
           return _.map(Array(y), (vv, j) => [xList[i], yList[j]]);
         });
+
+        return {
+          ratio,
+          canvasDivisions,
+        }
       }
 
       // 把每块画布的坐标映射到每个节点上
@@ -179,7 +197,6 @@ export default {
           // columesNumber 不是数组长度，减了 1 才是
           nodeColumns[(columesNumber - 1) - level].push(node);
         });
-        console.log('nodeColumns', nodeColumns)
         _.forEach(nodeColumns, (column, i) => {
           _.forEach(column, (node, j) => {
             let [x, y] = canvasCoodinateSystem[i][j];
@@ -194,12 +211,10 @@ export default {
       }
 
       const dependenciesLevel = computeDependenciesLevel(this.dependencyGraph, nodes);
-      console.log(dependenciesLevel)
       const dependencySize = computeDependencySize(dependenciesLevel)
-      console.log('dependencySize', dependencySize)
       const canvasCoodinateSystem = divideCanvas(dependencySize);
-      console.log('canvasCoodinateSystem', canvasCoodinateSystem)
-      return mapToCoodinateToNodes(dependenciesLevel, canvasCoodinateSystem);
+      this.zoomRatio = canvasCoodinateSystem.ratio;
+      return mapToCoodinateToNodes(dependenciesLevel, canvasCoodinateSystem.canvasDivisions);
     }
     this.nodePositions = computeInitNodePosition(this.nodes, this.dependencyGraph);
     this.isReady = true;
