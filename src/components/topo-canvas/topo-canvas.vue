@@ -105,7 +105,7 @@ export default {
     // 计算出每个节点的初始坐标
     const computeInitNodePosition = (nodes, dependencyGraph) => {
       // 计算每个节点的依赖层级
-      function computeDependencyLevel(graph, nodes) {
+      function computeDependenciesLevel(graph, nodes) {
         const allNodesName = _.map(nodes, node => node.name);
         // memoTable 是保存每个节点依赖层级的表
         const memoTable = {};
@@ -124,28 +124,34 @@ export default {
         });
         // nodesParent 是动态改变的。memoTable 保存只是当时这个节点的层级。
         // 所以最后要根据 nodesParent 和 memoTable 重新计算依赖等级
-        //  TODO：有点 magic，这个函数能运行，但我也不知道为什么能运行
+        // 但是首先要对 memoTable 进行排序，先计算层级低的，再计算层级高的
+        const memoTableSorted = _.chain(memoTable).toPairs().sortBy(_.last).value();
+        console.log(memoTableSorted)
         const result = {};
-        _.forEach(allNodesName, node => {
+        _.forEach(memoTableSorted, ([node, level], index) => {
           const parent = nodesParent[node];
           if (!parent) {
             // 表示它是顶级节点
             result[node] = 0;
           } else {
             // 否则就查表，每个节点的依赖等级在它父节点基础上加一
-            result[node] = memoTable[parent] + 1;
+            result[node] = _.find(memoTableSorted, pair => pair[0] === parent)[1] + 1;
+            // 同时再去更新 memoTableSorted 中该节点的层级
+            _.find(memoTableSorted, pair => pair[0] === node)[1] = result[node];
           }
         });
+
         return result;
       }
       
       // 计算整个依赖图作为一个二维数组的大小（列数和行数）
-      function computeDependencySize(dependencyLevel) {
-        const array = _.toArray(dependencyLevel)
+      function computeDependencySize(dependenciesLevel) {
+        const array = _.toArray(dependenciesLevel)
+        console.log(array, array)
         // 二维数组的长度，表示画布中的列数
         const x = _.max(array) + 1;
         // 二维数组的深度，表示画布中的行数
-        const y = _.chain(array).countBy().toPairs().max(_.last).head().toNumber().value() + 1;
+        const y = _.chain(array).countBy().toPairs().maxBy(_.last).last().toNumber().value();
         return [x, y];
       }
 
@@ -164,16 +170,16 @@ export default {
       }
 
       // 把每块画布的坐标映射到每个节点上
-      function mapToCoodinateToNodes (dependencyLevel, canvasCoodinateSystem) {
+      function mapToCoodinateToNodes (dependenciesLevel, canvasCoodinateSystem) {
         const nodesCoodinate = {};
         const columesNumber = canvasCoodinateSystem.length;
         const nodeColumns = _.map(Array(columesNumber), () => []);
 
-        _.forEach(dependencyLevel, (level, node) => {
+        _.forEach(dependenciesLevel, (level, node) => {
           // columesNumber 不是数组长度，减了 1 才是
           nodeColumns[(columesNumber - 1) - level].push(node);
         });
-
+        console.log('nodeColumns', nodeColumns)
         _.forEach(nodeColumns, (column, i) => {
           _.forEach(column, (node, j) => {
             let [x, y] = canvasCoodinateSystem[i][j];
@@ -187,10 +193,13 @@ export default {
         return nodesCoodinate
       }
 
-      const dependencyLevel = computeDependencyLevel(this.dependencyGraph, nodes);
-      const dependencySize = computeDependencySize(dependencyLevel)
+      const dependenciesLevel = computeDependenciesLevel(this.dependencyGraph, nodes);
+      console.log(dependenciesLevel)
+      const dependencySize = computeDependencySize(dependenciesLevel)
+      console.log('dependencySize', dependencySize)
       const canvasCoodinateSystem = divideCanvas(dependencySize);
-      return mapToCoodinateToNodes(dependencyLevel, canvasCoodinateSystem);
+      console.log('canvasCoodinateSystem', canvasCoodinateSystem)
+      return mapToCoodinateToNodes(dependenciesLevel, canvasCoodinateSystem);
     }
     this.nodePositions = computeInitNodePosition(this.nodes, this.dependencyGraph);
     this.isReady = true;
