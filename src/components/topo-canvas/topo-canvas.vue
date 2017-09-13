@@ -5,7 +5,7 @@
       <topo-node v-for="node in nodes" v-if="isReady"
         :key="node.name"
         :info="node"
-        :class="{active: activeNodeList[node.name]}"
+        :class="{active: activeNode === node.name}"
         :style="convertPositionToTransform(nodePositions[node.name])"
         :zoomRatio="zoomRatio"
         :x="nodePositions[node.name].x"
@@ -15,8 +15,8 @@
       <svg id="canvas-lines" xmlns="http://www.w3.org/2000/svg" version="1.1" class="viewport"
           width="100%" height="100%">
         <path v-for="l in lines" :d="convertToSvgPath(l[0], l[1], l[2], l[3])"
-          stroke="#fff"
-          opacity="0.6"
+          :stroke="l[4] ? '#fac832' : '#fff'"
+          :opacity="l[4] ? 0.9 : 0.6"
           stroke-width="2"
           stroke-linecap="round">
         </path>
@@ -39,11 +39,6 @@ export default {
     ZoomRatio
   },
   data() {
-    const activeNodeList = {};
-    _.forEach(this.nodes, n => {
-      activeNodeList[n.name] = false;
-    });
-
     // 记录所有节点的位置，用来划线。
     // 注意：这里的位置是每个节点左上角的位置，没有加偏移量
     const nodePositions = {};
@@ -70,7 +65,7 @@ export default {
     });
     
     return {
-      activeNodeList,
+      activeNode: '',
       nodePositions,
       dependencyGraph,
       nodeLines,
@@ -91,6 +86,8 @@ export default {
         linePosition[1] = this.nodePositions[dependent].y + PivotOffsetY;
         linePosition[2] = this.nodePositions[dependency].x + PivotOffsetXLarge;
         linePosition[3] = this.nodePositions[dependency].y + PivotOffsetY;
+        // 和当前选中的节点相连的线要变黄
+        linePosition[4] = dependent === this.activeNode || dependency === this.activeNode;
         return linePosition;
       })
     },
@@ -234,11 +231,8 @@ export default {
       this.nodePositions[name].y = this.nodePositions[name].y + y;
     },
     onNodeMousedown(nodeName) {
-      _.forEach(this.activeNodeList, (isActive, index) => {
-        this.activeNodeList[index] = false;
-      })
-      this.activeNodeList[nodeName] = true;
-    }
+      this.activeNode = nodeName;
+    },
   },
 }
 </script>
