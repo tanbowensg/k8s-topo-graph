@@ -105,6 +105,7 @@ export default {
     // 计算出每个节点的初始坐标
     const computeInitNodePosition = (nodes, dependencyGraph) => {
       // 计算每个节点的依赖层级
+      // 听说可以用沃舍尔算法，有空优化
       function computeDependenciesLevel(graph, nodes) {
         const allNodesName = _.map(nodes, node => node.name);
         // memoTable 是保存每个节点依赖层级的表
