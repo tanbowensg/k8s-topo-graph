@@ -73,6 +73,7 @@ $header-height: 40px;
 #graph-canvas {
   flex: 1 1 auto;
   position: relative;
+  overflow: hidden
 }
 
 #canvas-container {
@@ -83,6 +84,8 @@ $header-height: 40px;
   // height: 150%;
   // width: 150%;
   // transform: translate(-50%, -50%) scale(0.666666);
+  // transform-origin: 0% 0%;
+  // background: white;
 }
 
 #canvas-lines {

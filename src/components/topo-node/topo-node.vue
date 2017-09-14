@@ -80,7 +80,10 @@ export default {
       this.emitMovement(newPosition);
     })
 
-    this.$subscribeTo(this.mousedown$, this.emitMousedown);
+    this.$subscribeTo(this.mousedown$, event => {
+      event.event.stopPropagation();
+      this.emitMousedown();
+    });
   },
   methods: {
     onCanvasSizeChange() {

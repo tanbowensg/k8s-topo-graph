@@ -1,9 +1,10 @@
 <template>
-  <div id="graph-canvas">
+  <div id="graph-canvas"
+    v-stream:mousewheel="mousewheel$"
+    v-stream:mousedown="mousedown$" >
     <zoom-ratio v-model="zoomRatio"></zoom-ratio>
     <button id="toogle-code-section" @click="toggleCodeSection">→</button>
-    <div id="canvas-container" :style="canvasStyle" ref="canvasContainer"
-      v-stream:mousewheel="mousewheel$">
+    <div id="canvas-container" :style="canvasStyle" ref="canvasContainer">
       <topo-node v-for="node in nodes" v-if="isReady"
         :key="node.name"
         :info="node"
@@ -37,7 +38,7 @@ import { PivotOffsetY, PivotOffsetXLarge, PivotOffsetXSmall } from '../../const.
 export default {
   name: 'TopoCanvas',
   props: ['nodes'],
-  domStreams: ['mousewheel$'],
+  domStreams: ['mousewheel$', 'mousedown$'],
   components: {
     TopoNode,
     ZoomRatio
@@ -80,9 +81,12 @@ export default {
       // 这个 isReady 只有在 mounted 之后才会设为 true
       // 目的是为了让画布计算出每个节点的位置后，再创建节点
       isReady: false,
+      // 用来表示拖拽画布的状态的
+      canvasOffset: {x: 10, y: 30},
     }
   },
   subscriptions() {
+    // 鼠标滚动
     this.mousewheel$.subscribe(event => {
       const e = event.event;
       e.preventDefault();
@@ -110,7 +114,11 @@ export default {
       })
     },
     canvasStyle() {
-      const transform = `transform: translate(-50%, -50%) scale(${this.zoomRatio});`;
+      // 这个比例让画布可以居中，神奇公式，推导出来的
+      const translateScale = `${-50 / this.zoomRatio}%`
+      const translateX = `calc(${translateScale} + ${this.canvasOffset.x}px)`;
+      const translateY = `calc(${translateScale} + ${this.canvasOffset.y}px)`;
+      const transform = `transform: scale(${this.zoomRatio}) translate(${translateX}, ${translateY});`;
       // const transformOrigin = `transform-origin: ${this.canvasCenter[0]}px ${this.canvasCenter[1]}px;`
       const height = `height: ${1 / this.zoomRatio * 100}%;`;
       const width = `width: ${1 / this.zoomRatio * 100}%;`;
@@ -123,8 +131,52 @@ export default {
     });
   },
   mounted() {
+    const mousemove$ = Rx.Observable.fromEvent(document, 'mousemove');
+    const mouseup$ = Rx.Observable.fromEvent(document, 'mouseup');
+    const mouseDrag$ = this.mousedown$.switchMap(() => {
+      return mousemove$.takeUntil(mouseup$)
+        .map(event => {
+          return {x: event.movementX, y: event.movementY}
+        });
+    })
+    .scan((acc, {x, y}) => {
+      // 要算上缩放比
+      const newY = acc.y + y / this.zoomRatio;
+      const newX = acc.x + x / this.zoomRatio;
+      return {
+        x: newX,
+        y: newY,
+      }
+    }, {x: 0, y: 0})
+  
+    this.$subscribeTo(mouseDrag$, canvasOffset => {
+      this.canvasOffset = canvasOffset;
+    })
+
+    this.nodePositions = this.computeInitNodePosition(this.nodes, this.dependencyGraph);
+    this.isReady = true;
+  },
+  methods: {
+    convertToSvgPath(x1, y1, x2, y2) {
+      return `M${x1},${y1}L${x2},${y2}`;
+    },
+    // 把节点的位置转换成 transform 属性
+    convertPositionToTransform({x, y}) {
+      return `transform: translate(${x}px, ${y}px)`
+    },
+    // 更新移动的节点的位置
+    onNodeMove({name, x, y}) {
+      this.nodePositions[name].x = this.nodePositions[name].x + x;
+      this.nodePositions[name].y = this.nodePositions[name].y + y;
+    },
+    onNodeMousedown(nodeName) {
+      this.activeNode = nodeName;
+    },
+    toggleCodeSection() {
+      Bus.$emit('toogle-code-section');
+    },
     // 计算出每个节点的初始坐标
-    const computeInitNodePosition = (nodes, dependencyGraph) => {
+    computeInitNodePosition(nodes, dependencyGraph) {
       // 计算每个节点的依赖层级
       // 听说可以用沃舍尔算法，有空优化
       function computeDependenciesLevel(graph, nodes) {
@@ -237,29 +289,7 @@ export default {
       const canvasCoodinateSystem = divideCanvas(dependencySize);
       Bus.$emit('zoon-ratio-change', canvasCoodinateSystem.ratio);
       return mapToCoodinateToNodes(dependenciesLevel, canvasCoodinateSystem.canvasDivisions);
-    }
-    this.nodePositions = computeInitNodePosition(this.nodes, this.dependencyGraph);
-    this.isReady = true;
-  },
-  methods: {
-    convertToSvgPath(x1, y1, x2, y2) {
-      return `M${x1},${y1}L${x2},${y2}`;
     },
-    // 把节点的位置转换成 transform 属性
-    convertPositionToTransform({x, y}) {
-      return `transform: translate(${x}px, ${y}px)`
-    },
-    // 更新移动的节点的位置
-    onNodeMove({name, x, y}) {
-      this.nodePositions[name].x = this.nodePositions[name].x + x;
-      this.nodePositions[name].y = this.nodePositions[name].y + y;
-    },
-    onNodeMousedown(nodeName) {
-      this.activeNode = nodeName;
-    },
-    toggleCodeSection() {
-      Bus.$emit('toogle-code-section');
-    }
   },
 }
 </script>
