@@ -2,7 +2,8 @@
   <div id="graph-canvas">
     <zoom-ratio v-model="zoomRatio"></zoom-ratio>
     <button id="toogle-code-section" @click="toggleCodeSection">→</button>
-    <div id="canvas-container" :style="canvasStyle" ref="canvasContainer">
+    <div id="canvas-container" :style="canvasStyle" ref="canvasContainer"
+      v-stream:mousewheel="mousewheel$">
       <topo-node v-for="node in nodes" v-if="isReady"
         :key="node.name"
         :info="node"
@@ -36,6 +37,7 @@ import { PivotOffsetY, PivotOffsetXLarge, PivotOffsetXSmall } from '../../const.
 export default {
   name: 'TopoCanvas',
   props: ['nodes'],
+  domStreams: ['mousewheel$'],
   components: {
     TopoNode,
     ZoomRatio
@@ -72,10 +74,24 @@ export default {
       dependencyGraph,
       nodeLines,
       zoomRatio: 1,
+      // 画布的中心，用在 transform-origin
+      // TODO：有点困难，先不做
+      // canvasCenter: ['50%', '50%'],
       // 这个 isReady 只有在 mounted 之后才会设为 true
       // 目的是为了让画布计算出每个节点的位置后，再创建节点
-      isReady: false
+      isReady: false,
     }
+  },
+  subscriptions() {
+    this.mousewheel$.subscribe(event => {
+      const e = event.event;
+      e.preventDefault();
+      // 把画布中心挪到鼠标滚轮位置
+      // this.canvasCenter = [e.offsetX, e.offsetY];
+      const delta = e.wheelDeltaY;
+      if (delta > 0) Bus.$emit('zoom-ratio-plus');
+      if (delta < 0) Bus.$emit('zoom-ratio-minus');
+    });
   },
   computed: {
     // 所有要画的节点的线的坐标
@@ -95,6 +111,7 @@ export default {
     },
     canvasStyle() {
       const transform = `transform: translate(-50%, -50%) scale(${this.zoomRatio});`;
+      // const transformOrigin = `transform-origin: ${this.canvasCenter[0]}px ${this.canvasCenter[1]}px;`
       const height = `height: ${1 / this.zoomRatio * 100}%;`;
       const width = `width: ${1 / this.zoomRatio * 100}%;`;
       return `${transform}${height}${width}`;
