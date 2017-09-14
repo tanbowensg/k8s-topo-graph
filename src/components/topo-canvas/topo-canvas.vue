@@ -1,6 +1,7 @@
 <template>
   <div id="graph-canvas">
     <zoom-ratio v-model="zoomRatio"></zoom-ratio>
+    <button id="toogle-code-section" @click="toggleCodeSection">→</button>
     <div id="canvas-container" :style="canvasStyle" ref="canvasContainer">
       <topo-node v-for="node in nodes" v-if="isReady"
         :key="node.name"
@@ -29,6 +30,7 @@
 import yaml2json from 'js-yaml';
 import TopoNode from '../topo-node/topo-node';
 import ZoomRatio from '../zoom-ratio/zoom-ratio';
+import Bus from '../bus.js';
 import { PivotOffsetY, PivotOffsetXLarge, PivotOffsetXSmall } from '../../const.js'
 
 export default {
@@ -233,6 +235,9 @@ export default {
     onNodeMousedown(nodeName) {
       this.activeNode = nodeName;
     },
+    toggleCodeSection() {
+      Bus.$emit('toogle-code-section');
+    }
   },
 }
 </script>
@@ -241,7 +246,27 @@ export default {
 #graph-canvas #zoom-ratio {
   position: absolute;
   z-index: 1;
+  right: 50px;
+  top: 10px;
+}
+#graph-canvas #toogle-code-section {
+  display: block;
+  height: 26px;
+  width: 30px;
+  position: absolute;
+  z-index: 1;
   right: 10px;
   top: 10px;
+
+
+  line-height: 26px;
+  font-size: 18px;
+  color: white;
+  border-radius: 4px;
+  background-color: #151515;
+  box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.2);
+  border: none;
+  cursor: pointer;
+  outline: none;
 }
 </style>

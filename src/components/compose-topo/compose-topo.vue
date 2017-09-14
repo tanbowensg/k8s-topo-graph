@@ -11,7 +11,7 @@
       </header>
       <div id="dce-compose-topo-body">
         <topo-canvas :nodes="deployments"></topo-canvas>
-        <div id="code-section">
+        <div id="code-section" v-if="isCodeSectionVisible">
           <header id="code-header">
             <div class="code-tab active">YAML 编排</div><!--
           --><div class="code-tab">错误消息</div><!--
@@ -32,6 +32,7 @@
 <script>
 import yaml2json from 'js-yaml';
 import TopoCanvas from '../topo-canvas/topo-canvas';
+import Bus from '../bus.js';
 
 export default {
   name: 'ComposeTopo',
@@ -41,8 +42,15 @@ export default {
   },
   data() {
     return {
-      json: yaml2json.safeLoadAll(this.yaml)
+      json: yaml2json.safeLoadAll(this.yaml),
+      isCodeSectionVisible: true,
     }
+  },
+  created() {
+    Bus.$on('toogle-code-section', () => {
+      console.log('toogle-code-section')
+      this.isCodeSectionVisible = !this.isCodeSectionVisible;
+    });
   },
   computed: {
     deployments() {
