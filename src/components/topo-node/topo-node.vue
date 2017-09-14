@@ -23,29 +23,6 @@ export default {
   name: 'TopoNode',
   props: ['info', 'zoomRatio' ,'x', 'y'],
   domStreams: ['mousedown$'],
-  data(){
-    return {
-      maxX: Infinity,
-      maxY: Infinity,
-    };
-  },
-  computed: {
-    minX() {
-      // 本来这里的 0 应该是 6 * this.zoomRatio，6 是阴影宽度。但是太麻烦了，就先不减了
-      return 0;
-    },
-    minY() {
-      return 0;
-    },
-  },
-  mounted() {
-    this.onCanvasSizeChange();
-    Bus.$on('canvas-size-change', () => {
-      this.$nextTick(() => {
-        this.onCanvasSizeChange()
-      })
-    });
-  },
   subscriptions() {
     // {x: xxx, y: xxx}
     const mousemove$ = Rx.Observable.fromEvent(document, 'mousemove');
@@ -57,22 +34,13 @@ export default {
         })
     })
     .scan((acc, {x, y}) => {
-      let finalX, finalY;
       // 要算上缩放比
       const newX = acc.x + x / this.zoomRatio;
       const newY = acc.y + y / this.zoomRatio;
-      // 以免超出上限和下限
-      if (newX < this.minX) finalX = this.minX;
-      else if (newX > this.maxX) finalX = this.maxX;
-      else finalX = newX;
-
-      if (newY < this.minY) finalY = this.minY;
-      else if (newY > this.maxY) finalY = this.maxY;
-      else finalY = newY;
 
       return {
-        x: finalX,
-        y: finalY,
+        x: newX,
+        y: newY,
       }
     }, {x: this.x, y: this.y})
 
@@ -86,15 +54,6 @@ export default {
     });
   },
   methods: {
-    onCanvasSizeChange() {
-      this.getMaxSize();
-    },
-    getMaxSize() {
-      const parentWidth = this.$refs.topoNode.parentElement.clientWidth;
-      this.maxX = parentWidth - this.$refs.topoNode.clientWidth - 0;
-      const parentHeight = this.$refs.topoNode.parentElement.clientHeight;
-      this.maxY = parentHeight - this.$refs.topoNode.clientHeight - 0;
-    },
     emitMovement(newPosition) {
       // 只要通知最后位移的距离就可以了
       const payload = {
@@ -108,11 +67,6 @@ export default {
       this.$emit('mousedown', this.info.name);
     }
   },
-  watch: {
-    zoomRatio() {
-      this.$nextTick(this.getMaxSize);
-    }
-  }
 }
 </script>
 
