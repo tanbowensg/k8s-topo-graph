@@ -17,6 +17,8 @@
 </template>
 
 <script>
+import Bus from '../bus.js';
+
 export default {
   name: 'TopoNode',
   props: ['info', 'zoomRatio' ,'x', 'y'],
@@ -37,7 +39,12 @@ export default {
     },
   },
   mounted() {
-    this.getMaxSize();
+    this.onCanvasSizeChange();
+    Bus.$on('canvas-size-change', () => {
+      this.$nextTick(() => {
+        this.onCanvasSizeChange()
+      })
+    });
   },
   subscriptions() {
     // {x: xxx, y: xxx}
@@ -76,6 +83,9 @@ export default {
     this.$subscribeTo(this.mousedown$, this.emitMousedown);
   },
   methods: {
+    onCanvasSizeChange() {
+      this.getMaxSize();
+    },
     getMaxSize() {
       const parentWidth = this.$refs.topoNode.parentElement.clientWidth;
       this.maxX = parentWidth - this.$refs.topoNode.clientWidth - 0;
