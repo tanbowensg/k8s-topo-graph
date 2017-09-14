@@ -43,7 +43,7 @@ export default {
   data() {
     return {
       json: yaml2json.safeLoadAll(this.yaml),
-      isCodeSectionVisible: true,
+      isCodeSectionVisible: false,
     }
   },
   created() {

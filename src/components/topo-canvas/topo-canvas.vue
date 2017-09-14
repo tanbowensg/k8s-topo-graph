@@ -100,6 +100,11 @@ export default {
       return `${transform}${height}${width}`;
     },
   },
+  created() {
+    Bus.$on('zoom-ratio-change', ratio => {
+      this.zoomRatio = ratio;
+    });
+  },
   mounted() {
     // 计算出每个节点的初始坐标
     const computeInitNodePosition = (nodes, dependencyGraph) => {
@@ -213,7 +218,7 @@ export default {
       const dependenciesLevel = computeDependenciesLevel(this.dependencyGraph, nodes);
       const dependencySize = computeDependencySize(dependenciesLevel)
       const canvasCoodinateSystem = divideCanvas(dependencySize);
-      this.zoomRatio = canvasCoodinateSystem.ratio;
+      Bus.$emit('zoon-ratio-change', canvasCoodinateSystem.ratio);
       return mapToCoodinateToNodes(dependenciesLevel, canvasCoodinateSystem.canvasDivisions);
     }
     this.nodePositions = computeInitNodePosition(this.nodes, this.dependencyGraph);

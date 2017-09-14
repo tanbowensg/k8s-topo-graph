@@ -7,49 +7,44 @@
 </template>
 
 <script>
+import Bus from '../bus.js';
+
 export default {
   name: 'ZoomRatio',
-  props: ['value'],
   data() {
     return {
-      number: 1,
+      zoomRatio: 1,
     };
   },
   computed: {
     percent: {
       get() {
-        return `${Math.round(this.number * 100)}%`;
+        return `${Math.round(this.zoomRatio * 100)}%`;
       },
       set(input) {
         const val = input.replace('%', '') / 100;
-        if (val < 0.5) this.number = 0.5;
-        else if (val > 2) this.number = 2;
-        else this.number = val;
+        if (val < 0.5) this.zoomRatio = 0.5;
+        else if (val > 2) this.zoomRatio = 2;
+        else this.zoomRatio = val;
       }
     }
   },
+  created() {
+    Bus.$on('zoom-ratio-change', ratio => {
+      this.zoomRatio = ratio;
+    });
+  },
   methods: {
     emit() {
-      this.$emit('input', this.number)
+      this.$emit('input', this.zoomRatio)
     },
     minus() {
-      const val = this.number - 0.25;
-      if (val < 0.5) this.number = 0.5;
-      else this.number = val;
-      this.emit();
+      Bus.$emit('zoom-ratio-minus');
     },
     plus() {
-      const val = this.number + 0.25;
-      if (val > 2) this.number = 2;
-      else this.number = val;
-      this.emit();
+      Bus.$emit('zoom-ratio-plus');
     },
-  },
-  watch: {
-    value(val) {
-      this.number = val;
-    },
-  },
+  }
 }
 </script>
 
