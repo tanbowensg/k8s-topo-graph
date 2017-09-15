@@ -11,19 +11,7 @@
       </header>
       <div id="dce-compose-topo-body">
         <topo-canvas :nodes="deployments"></topo-canvas>
-        <div id="code-section" v-if="isCodeSectionVisible">
-          <header id="code-header">
-            <div class="code-tab active">YAML 编排</div><!--
-          --><div class="code-tab">错误消息</div><!--
-          --><div class="code-tab">帮助文档</div>
-          </header>
-          <div id="code-main">
-          </div>
-          <footer id="code-footer">
-            <div class="footer-btn active">保存</div><!--
-         --><div class="footer-btn">取消</div>
-          </footer>
-        </div>
+        <code-section :yaml="yaml"></code-section>
       </div>
     </div>
   </div>
@@ -32,17 +20,18 @@
 <script>
 import yaml2json from 'js-yaml';
 import TopoCanvas from '../topo-canvas/topo-canvas';
+import CodeSection from '../code-section/code-section';
 import Bus from '../bus.js';
 
 export default {
   name: 'ComposeTopo',
   props: ['yaml'],
   components: {
+    CodeSection,
     TopoCanvas
   },
   data() {
     return {
-      json: yaml2json.safeLoadAll(this.yaml),
       isCodeSectionVisible: false,
     }
   },
@@ -53,6 +42,9 @@ export default {
     });
   },
   computed: {
+    json() {
+      return yaml2json.safeLoadAll(this.yaml);
+    },
     deployments() {
       function getDeploymentDependencies(deployment) {
         return _.get(deployment, 'metadata.annotations["io.daocloud.dce/depend-on"]', []);

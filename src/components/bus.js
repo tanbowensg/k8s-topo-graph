@@ -3,12 +3,17 @@ import Vue from 'vue'
 const bus = new Vue({
   data: {
     zoomRatio: 1,
+    yaml: '',
   },
   created() {
     this.$on('toogle-code-section', () => {
       this.$nextTick(() => {
         this.$emit('canvas-size-change')
       });
+    });
+
+    this.$on('yaml-change', yaml => {
+      this.yaml = yaml;
     });
 
     this.$on('zoom-ratio-plus', () => {

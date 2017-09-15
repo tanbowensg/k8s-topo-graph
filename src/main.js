@@ -5,6 +5,7 @@ import App from './app'
 import Rx from 'rxjs/Rx'
 import VueRx from 'vue-rx';
 import lodash from 'lodash';
+import VueCodeMirror from 'vue-codemirror';
 
 window.Rx = Rx;
 window._ = lodash;
@@ -12,6 +13,7 @@ window._ = lodash;
 Vue.config.productionTip = false
 
 Vue.use(VueRx, Rx);
+Vue.use(VueCodeMirror);
 
 /* eslint-disable no-new */
 new Vue({
