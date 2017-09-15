@@ -127,10 +127,18 @@ $header-height: 40px;
     }
   }
   #code-main {
-    flex: 1 1 auto;
+    display: flex;
+    flex: 1;
     border-top: solid 1px $border-color;
     border-bottom: solid 1px $border-color;
     background: $code-bg;
+    .CodeMirror {
+      height: 100%;
+      width: 100%;
+      .highlight-line {
+        background: yellow !important;
+      }
+    }
   }
   #code-footer {
     height: 38px;

@@ -13,8 +13,7 @@
         :zoomRatio="zoomRatio"
         :x="nodePositions[node.name].x"
         :y="nodePositions[node.name].y"
-        @move="onNodeMove"
-        @mousedown="onNodeMousedown"></topo-node>
+        @move="onNodeMove"></topo-node>
       <svg id="canvas-lines" xmlns="http://www.w3.org/2000/svg" version="1.1" class="viewport"
           width="100%" height="100%">
         <path v-for="l in lines" :d="convertToSvgPath(l[0], l[1], l[2], l[3])"
@@ -129,6 +128,9 @@ export default {
     Bus.$on('zoom-ratio-change', ratio => {
       this.zoomRatio = ratio;
     });
+    Bus.$on('activate-node', nodeName => {
+      this.onActivateNode(nodeName);
+    });
   },
   mounted() {
     const mousemove$ = Rx.Observable.fromEvent(document, 'mousemove');
@@ -169,7 +171,7 @@ export default {
       this.nodePositions[name].x = this.nodePositions[name].x + x;
       this.nodePositions[name].y = this.nodePositions[name].y + y;
     },
-    onNodeMousedown(nodeName) {
+    onActivateNode(nodeName) {
       this.activeNode = nodeName;
     },
     toggleCodeSection() {
