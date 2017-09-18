@@ -5,7 +5,7 @@
     --><div class="code-tab">错误消息</div><!--
     --><div class="code-tab">帮助文档</div>
     </header>
-    <div id="code-main">
+    <div id="code-main" class="jamie-cm">
       <codemirror v-model="yaml" :options="codeMirrorOption" ref="cm"></codemirror>
     </div>
     <footer id="code-footer">
@@ -24,7 +24,6 @@ const CODEMIRROR_DEFAULT = {
   indentWithTabs: false, // 自动缩进时不使用 Tab 缩进而是使用空格
   lineWrapping: true,
   styleActiveLine: true,
-  theme: 'tomorrow-night-bright',
   mode: 'text/x-yaml',
   extraKeys: {
     // 手动缩进时使用空格替换 Tab
@@ -137,6 +136,14 @@ export default {
           className: "highlight-line"
         }
       );
+      // 注释掉的这段才是真正的给每行代码加背景颜色的功能，但是这样很消耗性能
+      // for (let i = 0; i < this.cm.lineCount() - 1; i++) {
+      //   if (i >= codeFragment.startLine && i < codeFragment.endLine) {
+      //     this.cm.addLineClass(i, null, 'highlight-line')
+      //   } else {
+      //     this.cm.removeLineClass(i, null, 'highlight-line')
+      //   }
+      // }
       const codeMirrorLineHeight = 15;
       // 然后滚动到那一行
       this.cm.scrollTo(null, codeMirrorLineHeight * codeFragment.startLine);
@@ -146,4 +153,5 @@ export default {
 </script>
 
 <style lang="scss">
+@import './jamie-cm.scss';
 </style>

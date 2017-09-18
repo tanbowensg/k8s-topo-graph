@@ -132,13 +132,7 @@ $header-height: 40px;
     border-top: solid 1px $border-color;
     border-bottom: solid 1px $border-color;
     background: $code-bg;
-    .CodeMirror {
-      height: 100%;
-      width: 100%;
-      .highlight-line {
-        background: yellow !important;
-      }
-    }
+
   }
   #code-footer {
     height: 38px;

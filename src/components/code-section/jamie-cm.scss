@@ -1,0 +1,44 @@
+$code-bg: #3b3b3b;
+$grey-dark: #9ba3af;
+$blue: #69bce8;
+
+.jamie-cm {
+  .CodeMirror {
+    height: 100%;
+    width: 100%;
+    .highlight-line {
+      background: rgba(255, 255, 255, 0.05) !important;
+      min-width: 100%;
+    }
+  }
+  // 以下是根据默认主题，按照总监要求修改的
+  .CodeMirror { background: $code-bg; color: #d6d5d4; }
+  div.CodeMirror-selected { background: #3a3432; }
+  .CodeMirror-line::selection, .CodeMirror-line > span::selection, .CodeMirror-line > span > span::selection { background: $code-bg; }
+  .CodeMirror-line::-moz-selection, .CodeMirror-line > span::-moz-selection, .CodeMirror-line > span > span::-moz-selection { background: $code-bg; }
+  .CodeMirror-gutters { background: $code-bg; border-right: 0px; }
+  .CodeMirror-guttermarker { color: #db2d20; }
+  .CodeMirror-guttermarker-subtle { color: #5c5855; }
+  .CodeMirror-linenumber { color: $grey-dark; }
+
+  .CodeMirror-cursor { border-left: 1px solid #807d7c; }
+
+  span.cm-comment { color: #cdab53; }
+  span.cm-atom { color: $blue; }
+  span.cm-number { color: $blue; }
+
+  span.cm-property, span.cm-attribute { color: #01a252; }
+  span.cm-keyword { color: #db2d20; }
+  span.cm-string { color: #fded02; }
+
+  span.cm-variable { color: #01a252; }
+  span.cm-variable-2 { color: #01a0e4; }
+  span.cm-def { color: $blue; }
+  span.cm-bracket { color: #d6d5d4; }
+  span.cm-tag { color: #db2d20; }
+  span.cm-link { color: $blue; }
+  span.cm-error { background: #db2d20; color: #807d7c; }
+
+  .CodeMirror-activeline-background { background: #2F2F2F; }
+  .CodeMirror-matchingbracket { text-decoration: underline; color: white !important; }
+}
