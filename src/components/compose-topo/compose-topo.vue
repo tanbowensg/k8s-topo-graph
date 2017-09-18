@@ -33,14 +33,9 @@ export default {
   data() {
     return {
       yaml: this.rawData,
-      isCodeSectionVisible: false,
     }
   },
   created() {
-    Bus.$on('toogle-code-section', () => {
-      this.isCodeSectionVisible = !this.isCodeSectionVisible;
-    });
-
     Bus.$on('yaml-change', yaml => {
       this.yaml = yaml;
     });
