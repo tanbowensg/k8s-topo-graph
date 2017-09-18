@@ -150,11 +150,11 @@ export default {
         y: newY,
       }
     }, {x: 0, y: 0})
-  
+    // 实现拖动画布的逻辑
     this.$subscribeTo(mouseDrag$, canvasOffset => {
       this.canvasOffset = canvasOffset;
     })
-
+    // 计算每个节点的初始位置
     this.nodePositions = this.computeInitNodePosition(this.nodes, this.dependencyGraph);
     this.isReady = true;
   },
