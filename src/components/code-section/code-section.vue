@@ -141,7 +141,13 @@ export default {
       this.cm.scrollTo(null, codeMirrorLineHeight * codeFragment.startLine);
     },
     onCodeChange(yaml) {
-      Bus.$emit('yaml-change', yaml);
+      try {
+        // 判断一下 yaml 合不合法
+        const json = yaml2json.safeLoadAll(yaml);
+        Bus.$emit('yaml-change', yaml);
+      } catch(e) {
+        console.log('yaml 不合法')
+      }
     },
   },
 }

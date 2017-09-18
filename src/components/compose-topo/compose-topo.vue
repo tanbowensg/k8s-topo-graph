@@ -51,7 +51,7 @@ export default {
     },
     deployments() {
       function getDeploymentDependencies(deployment) {
-        return _.get(deployment, 'metadata.annotations["io.daocloud.dce/depend-on"]', []);
+        return _.get(deployment, 'metadata.annotations["io.daocloud.dce/depend-on"]') || [];
       }
 
       // 先取出所有服务的依赖，用于判断一个服务是否有依赖
