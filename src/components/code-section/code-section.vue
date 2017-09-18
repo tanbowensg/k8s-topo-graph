@@ -6,7 +6,7 @@
     --><div class="code-tab">帮助文档</div>
     </header>
     <div id="code-main" class="jamie-cm">
-      <codemirror v-model="yaml" :options="codeMirrorOption" ref="cm"></codemirror>
+      <codemirror :code="yaml" :options="codeMirrorOption" @change="onCodeChange" ref="cm"></codemirror>
     </div>
     <footer id="code-footer">
       <div class="footer-btn active">保存</div><!--
@@ -139,7 +139,10 @@ export default {
       const codeMirrorLineHeight = 15;
       // 然后滚动到那一行
       this.cm.scrollTo(null, codeMirrorLineHeight * codeFragment.startLine);
-    }
+    },
+    onCodeChange(yaml) {
+      Bus.$emit('yaml-change', yaml);
+    },
   },
 }
 </script>

@@ -25,20 +25,24 @@ import Bus from '../bus.js';
 
 export default {
   name: 'ComposeTopo',
-  props: ['yaml'],
+  props: ['rawData'],
   components: {
     CodeSection,
     TopoCanvas
   },
   data() {
     return {
+      yaml: this.rawData,
       isCodeSectionVisible: false,
     }
   },
   created() {
     Bus.$on('toogle-code-section', () => {
-      console.log('toogle-code-section')
       this.isCodeSectionVisible = !this.isCodeSectionVisible;
+    });
+
+    Bus.$on('yaml-change', yaml => {
+      this.yaml = yaml;
     });
   },
   computed: {
@@ -75,6 +79,11 @@ export default {
       });
     },
   },
+  watch: {
+    rawData(rawData) {
+      this.yaml = rawData;
+    }
+  }
 }
 </script>
 

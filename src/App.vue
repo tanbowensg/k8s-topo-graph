@@ -1,10 +1,9 @@
 <template>
-  <compose-topo :yaml="yaml"></compose-topo>
+  <compose-topo :rawData="yaml"></compose-topo>
 </template>
 
 <script>
 import ComposeTopo from './components/compose-topo/compose-topo'
-import Bus from './components/bus.js'
 import yaml from './yaml'
 
 export default {
@@ -17,14 +16,6 @@ export default {
       yaml
     };
   },
-  created() {
-    Bus.$emit('yaml-change', this.yaml);
-  },
-  watch: {
-    yaml() {
-      Bus.$emit('yaml-change', this.yaml);
-    }
-  }
 }
 </script>
 
