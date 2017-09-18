@@ -136,14 +136,6 @@ export default {
           className: "highlight-line"
         }
       );
-      // 注释掉的这段才是真正的给每行代码加背景颜色的功能，但是这样很消耗性能
-      // for (let i = 0; i < this.cm.lineCount() - 1; i++) {
-      //   if (i >= codeFragment.startLine && i < codeFragment.endLine) {
-      //     this.cm.addLineClass(i, null, 'highlight-line')
-      //   } else {
-      //     this.cm.removeLineClass(i, null, 'highlight-line')
-      //   }
-      // }
       const codeMirrorLineHeight = 15;
       // 然后滚动到那一行
       this.cm.scrollTo(null, codeMirrorLineHeight * codeFragment.startLine);
