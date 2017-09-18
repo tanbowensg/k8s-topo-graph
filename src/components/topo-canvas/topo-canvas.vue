@@ -55,9 +55,7 @@ export default {
     const dependencyGraph = {};
     // 这里和上面我总共遍历了两次，其实可以合并。但我不合并的理由是看起来更清楚一点，而且对性能影响不大。
     _.forEach(this.nodes, n => {
-      if (n.dependencies.length > 0) {
-        dependencyGraph[n.name] = n.dependencies;
-      }
+      dependencyGraph[n.name] = n.dependencies;
     })
 
     // 这是要画的所有节点之间的线的关系，根据 dependencyGraph 得到
@@ -179,8 +177,8 @@ export default {
     },
     // 计算出每个节点的初始坐标
     computeInitNodePosition(nodes, dependencyGraph) {
-      // 计算每个节点的依赖层级
-      // 听说可以用沃舍尔算法，有空优化
+      // 计算每个节点的依赖层级，没有依赖关系的节点不在这个层级中
+      // TODO: 听说可以用沃舍尔算法，有空优化
       function computeDependenciesLevel(graph, nodes) {
         const allNodesName = _.map(nodes, node => node.name);
         // memoTable 是保存每个节点依赖层级的表
@@ -206,8 +204,15 @@ export default {
         _.forEach(memoTableSorted, ([node, level], index) => {
           const parent = nodesParent[node];
           if (!parent) {
-            // 表示它是顶级节点
-            result[node] = 0;
+            // 如果该节点没有父节点
+            if (dependencyGraph[node].length > 0) {
+              // 而且有依赖，那就表示它是顶级节点
+              result[node] = 0;
+            } else {
+              // 否则表示它和其他节点都没有依赖关系，依赖层级为 -1
+              result[node] = -1;
+            }
+
           } else {
             // 否则就查表，每个节点的依赖等级在它父节点基础上加一
             result[node] = _.find(memoTableSorted, pair => pair[0] === parent)[1] + 1;
@@ -223,7 +228,9 @@ export default {
       function computeDependencySize(dependenciesLevel) {
         const array = _.toArray(dependenciesLevel)
         // 二维数组的长度，表示画布中的列数
-        const x = _.max(array) + 1;
+        let x = _.max(array) + 1;
+        // 如果有依赖层级为 -1 的节点，那么就单开一列来展示它
+        if (_.includes(array, -1)) x = x + 1;
         // 二维数组的深度，表示画布中的行数
         const y = _.chain(array).countBy().toPairs().maxBy(_.last).last().toNumber().value();
         return [x, y];
@@ -268,10 +275,17 @@ export default {
         const nodesCoodinate = {};
         const columesNumber = canvasCoodinateSystem.length;
         const nodeColumns = _.map(Array(columesNumber), () => []);
+        // 是否存在依赖层级为 -1 的节点，简称自由节点
+        const existFreeNode = _.includes(dependenciesLevel, -1);
 
         _.forEach(dependenciesLevel, (level, node) => {
-          // columesNumber 不是数组长度，减了 1 才是
-          nodeColumns[(columesNumber - 1) - level].push(node);
+          if (existFreeNode) {
+            // 存在自由节点就要 -2
+            nodeColumns[(columesNumber - 2) - level].push(node);
+          } else {
+            // 一般情况 -1
+            nodeColumns[(columesNumber - 1) - level].push(node);
+          }
         });
         _.forEach(nodeColumns, (column, i) => {
           _.forEach(column, (node, j) => {
@@ -289,7 +303,7 @@ export default {
       const dependenciesLevel = computeDependenciesLevel(this.dependencyGraph, nodes);
       const dependencySize = computeDependencySize(dependenciesLevel)
       const canvasCoodinateSystem = divideCanvas(dependencySize);
-      Bus.$emit('zoon-ratio-change', canvasCoodinateSystem.ratio);
+      Bus.$emit('zoom-ratio-change', canvasCoodinateSystem.ratio);
       return mapToCoodinateToNodes(dependenciesLevel, canvasCoodinateSystem.canvasDivisions);
     },
   },
