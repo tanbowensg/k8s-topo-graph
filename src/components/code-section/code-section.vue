@@ -97,7 +97,7 @@ export default {
       const onFragmentEnd = line => {
         const lineNumber = this.cm.getLineNumber(line);
         // 创建一个新部分
-        _.last(codeFragments).endLine = lineNumber;
+        _.last(codeFragments).endLine = lineNumber - 1;//减1是为了减掉 --- 的那行
       }
 
       this.cm.eachLine(line => {
@@ -125,6 +125,7 @@ export default {
       if (this.highlightMark) {
         this.highlightMark.clear();
       }
+      // 先标记
       this.highlightMark = this.cm.markText(
         {
           line: codeFragment.startLine,
@@ -136,6 +137,9 @@ export default {
           className: "highlight-line"
         }
       );
+      const codeMirrorLineHeight = 15;
+      // 然后滚动到那一行
+      this.cm.scrollTo(null, codeMirrorLineHeight * codeFragment.startLine);
     }
   },
 }
