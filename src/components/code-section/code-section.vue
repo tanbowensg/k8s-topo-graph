@@ -1,5 +1,5 @@
 <template>
-  <div id="code-section" v-if="isCodeSectionVisible">
+  <div id="code-section" v-show="isCodeSectionVisible">
     <header id="code-header">
       <div class="code-tab active">YAML 编排</div><!--
     --><div class="code-tab">错误消息</div><!--
@@ -57,6 +57,9 @@ export default {
   created() {
     Bus.$on('toogle-code-section', () => {
       this.isCodeSectionVisible = !this.isCodeSectionVisible;
+      this.$nextTick(() => {
+        this.cm.refresh();
+      });
     });
     Bus.$on('activate-node', nodeName => {
       this.highlightCode(_.find(this.codeFragments, { name: nodeName }));
