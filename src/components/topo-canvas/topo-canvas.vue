@@ -6,9 +6,9 @@
     <button id="toogle-code-section" @click="toggleCodeSection">→</button>
     <div id="canvas-container" :style="canvasStyle" ref="canvasContainer">
       <topo-node v-for="node in nodes" v-if="isReady"
-        :key="node.name"
+        :key="node.id"
         :info="node"
-        :class="{active: activeNode === node.name}"
+        :class="{active: activeNode === node.id}"
         :style="convertPositionToTransform(nodePositions[node.name])"
         :zoomRatio="zoomRatio"
         :x="nodePositions[node.name].x"
@@ -78,6 +78,7 @@ export default {
   },
   computed: {
     dependencyGraph() {
+      console.log('this.nodes', this.nodes)
       const dependencyGraph = {};
       // 这里和上面我总共遍历了两次，其实可以合并。但我不合并的理由是看起来更清楚一点，而且对性能影响不大。
       _.forEach(this.nodes, n => {
@@ -129,8 +130,8 @@ export default {
     Bus.$on('zoom-ratio-change', ratio => {
       this.zoomRatio = ratio;
     });
-    Bus.$on('activate-node', nodeName => {
-      this.onActivateNode(nodeName);
+    Bus.$on('activate-node', nodeId => {
+      this.onActivateNode(nodeId);
     });
   },
   mounted() {
@@ -172,8 +173,8 @@ export default {
       this.nodePositions[name].x = this.nodePositions[name].x + x;
       this.nodePositions[name].y = this.nodePositions[name].y + y;
     },
-    onActivateNode(nodeName) {
-      this.activeNode = nodeName;
+    onActivateNode(nodeId) {
+      this.activeNode = nodeId;
     },
     toggleCodeSection() {
       Bus.$emit('toogle-code-section');

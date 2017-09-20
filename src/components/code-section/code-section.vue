@@ -25,17 +25,6 @@ const CODEMIRROR_DEFAULT = {
   lineWrapping: true,
   styleActiveLine: true,
   mode: 'text/x-yaml',
-  extraKeys: {
-    // 手动缩进时使用空格替换 Tab
-    // 空格的数量由 'indentUnit' 配置决定，默认为 2
-    Tab: cm => {
-      const spaces = Array(cm.getOption('indentUnit') + 1).join(' ');
-      cm.replaceSelection(spaces, 'end');
-    },
-    'Ctrl-Enter': cm => {
-      cm.setOption('fullScreen', !cm.getOption('fullScreen'));
-    },
-  },
 };
 export default {
   name: 'CodeSection',
@@ -50,7 +39,6 @@ export default {
   },
   computed: {
     cm() {
-      window.cm = this.$refs.cm.editor
       return this.$refs.cm.editor;
     },
   },
@@ -61,8 +49,8 @@ export default {
         this.cm.refresh();
       });
     });
-    Bus.$on('activate-node', nodeName => {
-      this.highlightCode(_.find(this.codeFragments, { name: nodeName }));
+    Bus.$on('activate-node', nodeId => {
+      this.highlightCode(_.find(this.codeFragments, { id: nodeId }));
     });
   },
   mounted() {
@@ -74,6 +62,7 @@ export default {
       const codeFragments = [];
       // 用来判断当前是否正在读取 metaData
       let inMetadata = false;
+      let currentKind = '';
 
       const onFragmentStart = line => {
         const lineNumber = this.cm.getLineNumber(line);
@@ -86,12 +75,17 @@ export default {
       const onFragmentMetadataStart = () => {
         inMetadata = true;
       }
-
+      
+      const onKind = line => {
+        currentKind = line.text.replace('kind:', '').trim();;
+      }
+      
       const onName = line => {
         // 首先判断是不是在读取 metadata
         if (inMetadata) {
-          // 如果是的话，这个名字才是这个部分的名字
-          _.last(codeFragments).name = line.text.replace('name:', '').trim();
+          // 如果是的话，就可以获取这一部分的 id 了
+          const name = line.text.replace('name:', '').trim();
+          _.last(codeFragments).id = `${currentKind}_${name}`;
           inMetadata = false;
         }
       }
@@ -109,6 +103,9 @@ export default {
         }
         if (_.startsWith(line.text, 'metadata:')) {
           onFragmentMetadataStart();
+        }
+        if (_.startsWith(line.text, 'kind:')) {
+          onKind(line);
         }
         if (_.includes(line.text, 'name:')) {
           onName(line);
@@ -149,7 +146,6 @@ export default {
         const json = yaml2json.safeLoadAll(yaml);
         Bus.$emit('yaml-change', yaml);
       } catch(e) {
-        console.log('yaml 不合法')
       }
     },
   },

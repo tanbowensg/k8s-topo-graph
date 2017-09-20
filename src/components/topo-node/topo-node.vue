@@ -64,7 +64,7 @@ export default {
       this.$emit('move', payload);
     },
     emitMousedown() {
-      Bus.$emit('activate-node', this.info.name);
+      Bus.$emit('activate-node', this.info.id);
     }
   },
 }
