@@ -27,7 +27,7 @@ $pivotOffsetXLarge: $topoNodeHeaderWidth - $pivotOffsetXSmall - $pivotWidth;
       background-color: #9026d4;
     }
   }
-  &.storage {
+  &.volume {
     .topo-node-header {
       background-color: #128bf1;
     }
@@ -77,6 +77,12 @@ $pivotOffsetXLarge: $topoNodeHeaderWidth - $pivotOffsetXSmall - $pivotWidth;
     }
     .content {
       opacity: 0.7;
+    }
+    .title {
+      display: inline-block;
+      width: 100%;
+      opacity: 0.7;
+      text-align: center;
     }
   }
 }

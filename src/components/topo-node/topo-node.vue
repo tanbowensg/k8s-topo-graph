@@ -6,12 +6,13 @@
     <header class="topo-node-header">
       <div class="pivot left" v-if="info.hasDependency"></div>
       <div class="pivot right" v-if="info.isDependency"></div>
-      <span>{{info.name}}</span>
+      <span>{{info.claimName || info.name}}</span>
     </header>
     <div class="topo-node-body">
       <div class="line" v-for="content in info.values">
-        <span class="label">{{content[0]}}</span>
-        <span class="content">{{content[1]}}</span>
+        <span class="label" v-if="content[0]">{{content[0]}}</span>
+        <span class="content" v-if="content[1]">{{content[1]}}</span>
+        <span class="title" v-if="content[2]">{{content[2]}}</span>
       </div>
     </div>
   </div>
