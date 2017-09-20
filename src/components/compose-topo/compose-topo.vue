@@ -11,7 +11,7 @@
       </header>
       <div id="dce-compose-topo-body">
         <topo-canvas v-if="tab === 'deployments'" :nodes="deploymentViewNodes" key="deployments"></topo-canvas>
-        <topo-canvas v-if="tab === 'services'" :nodes="services" key="services"></topo-canvas>
+        <topo-canvas v-if="tab === 'services'" :nodes="serviceViewNodes" key="services"></topo-canvas>
         <code-section :yaml="yaml"></code-section>
       </div>
     </div>
@@ -61,7 +61,9 @@ export default {
           id: `Deployment_${deployment.metadata.name}`,
           type: 'deployment',
           name: deployment.metadata.name,
-          dependencies: getDeploymentDependencies(deployment),
+          app: _.get(deployment, 'spec.template.metadata.labels.app', ''),
+          // 表示它依赖的服务
+          deployments: getDeploymentDependencies(deployment),
           values: [
             ['镜像', _.get(deployment, 'spec.template.spec.containers[0].image', '')],
             ['实例数', _.get(deployment, 'spec.replicas', 0)],
@@ -75,12 +77,13 @@ export default {
     deploymentViewNodes() {
       // 先取出所有服务的依赖，用于判断一个服务是否有依赖
       const allDependencies = _.reduce(this.deployments, (all, deployment) => {
-        return all.concat(deployment.dependencies)
-      }, [])
+        return all.concat(deployment.deployments);
+      }, []);
 
       // 处理各个节点要展示的数据
       return _.map(this.deployments, deployment => {
         const d = _.clone(deployment);
+        d.dependencies = deployment.deployments;
         // 是否拥有依赖
         d.hasDependency = d.dependencies.length > 0;
         // 是否是其他节点的依赖
@@ -106,11 +109,7 @@ export default {
           id: `Service_${service.metadata.name}`,
           type: 'service',
           name: service.metadata.name,
-          dependencies: [],
-          // 是否拥有依赖
-          hasDependency: false,
-          // 是否是其他节点的依赖
-          isDependency: false,
+          app: _.get(service, 'spec.selector.app', ''),
           values: [
             ['模式', typeTable[_.get(service, 'spec.type', 'ClusterIP')]],
             ['端口', _.map(_.get(service, 'spec.ports', []), formatPort).join(',')],
@@ -118,6 +117,26 @@ export default {
         };
       });
     },
+    // 服务视图所需的节点和依赖关系
+    serviceViewNodes() {
+      const serviceViewNodes = _.map(this.services, service => {
+        const s = _.clone(service);
+        // 网络的依赖只有服务
+        s.dependencies = _.filter(this.deployments, d => d.app === s.app).map(d => d.id);
+        s.hasDependency = s.dependencies.length > 0;
+        // 网络永远不会被依赖
+        s.isDependency = false;
+        return s;
+      })
+      // 被网络依赖的所有服务
+      const dependedDeployements = _.reduce(serviceViewNodes, (all, service) => {
+        const deployments = _.map(service.dependencies, dId => 
+          _.find(this.deployments, { id: dId }));
+        return all.concat(deployments);
+      }, [])
+      // 最后返回网络和服务的节点
+      return serviceViewNodes.concat(dependedDeployements);
+    }
   },
   watch: {
     rawData(rawData) {

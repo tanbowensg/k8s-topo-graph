@@ -190,12 +190,10 @@ export default {
         const nodesParent = {};
         // yaml 是不会有循环依赖的，所以这里也不考虑环
         _.forEach(graph, (dependencies, node) => {
-          console.log(dependencies, node)
           if (!memoTable[node]) memoTable[node] = 0;
           if (!nodesParent[node]) nodesParent[node] = null;
           _.forEach(dependencies, dependency => {
             // 父节点是会变的
-            console.log(dependency)
             nodesParent[dependency] = node;
             // 当前节点的依赖等级在它父节点的基础上加一
             memoTable[dependency] = memoTable[node] + 1
@@ -205,7 +203,6 @@ export default {
         // 所以最后要根据 nodesParent 和 memoTable 重新计算依赖等级
         // 但是首先要对 memoTable 进行排序，先计算层级低的，再计算层级高的
         const memoTableSorted = _.chain(memoTable).toPairs().sortBy(_.last).value();
-        console.log('memoTableSorted', memoTableSorted)
         const result = {};
         _.forEach(memoTableSorted, ([node, level], index) => {
           const parent = nodesParent[node];
@@ -326,7 +323,6 @@ export default {
       }
 
       const dependenciesLevel = computeDependenciesLevel(this.dependencyGraph, nodes);
-      console.log('dependenciesLevel', dependenciesLevel)
       const dependencySize = computeDependencySize(dependenciesLevel)
       const canvasCoodinateSystem = divideCanvas(dependencySize);
       Bus.$emit('zoom-ratio-change', canvasCoodinateSystem.ratio);
