@@ -78,7 +78,6 @@ export default {
   },
   computed: {
     dependencyGraph() {
-      console.log('this.nodes', this.nodes)
       const dependencyGraph = {};
       // 这里和上面我总共遍历了两次，其实可以合并。但我不合并的理由是看起来更清楚一点，而且对性能影响不大。
       _.forEach(this.nodes, n => {
@@ -237,6 +236,13 @@ export default {
         if (_.includes(array, -1)) x = x + 1;
         // 二维数组的深度，表示画布中的行数
         const y = _.chain(array).countBy().toPairs().maxBy(_.last).last().toNumber().value();
+
+        // 分两种情况，一种是完全没有依赖关系，即x = 1；另一种是其他情况
+        if (x === 1) {
+          // 如果只有一列，那么就直接无视依赖关系，把所有节点平铺
+          // TODO：暂且就算 3 列，可能可以用贪心算法
+          return [3, Math.ceil(y / 3)];
+        }
         return [x, y];
       }
 
@@ -279,18 +285,30 @@ export default {
         const nodesCoodinate = {};
         const columesNumber = canvasCoodinateSystem.length;
         const nodeColumns = _.map(Array(columesNumber), () => []);
-        // 是否存在依赖层级为 -1 的节点，简称自由节点
-        const existFreeNode = _.includes(dependenciesLevel, -1);
 
-        _.forEach(dependenciesLevel, (level, node) => {
-          if (existFreeNode) {
-            // 存在自由节点就要 -2
-            nodeColumns[(columesNumber - 2) - level].push(node);
-          } else {
-            // 一般情况 -1
-            nodeColumns[(columesNumber - 1) - level].push(node);
+        // 是否完全没有依赖关系，即全都是自由节点
+        const isNoDependency = _.max(_.toArray(dependenciesLevel)) === -1;
+        if (isNoDependency) {
+          // 如果完全没有依赖关系，那就一个个把节点平铺开
+          const nodes = _.keys(dependenciesLevel);
+          for (let i = 0; i < nodes.length; i++) {
+            nodeColumns[i % columesNumber].push(nodes[i]);
           }
-        });
+        } else {
+          // 是否存在依赖层级为 -1 的节点，简称自由节点
+          const existFreeNode = _.includes(dependenciesLevel, -1);
+          // 否则就按照层级排列
+          _.forEach(dependenciesLevel, (level, node) => {
+            if (existFreeNode) {
+              // 存在自由节点就要 -2
+              nodeColumns[(columesNumber - 2) - level].push(node);
+            } else {
+              // 一般情况 -1
+              nodeColumns[(columesNumber - 1) - level].push(node);
+            }
+          });
+        }
+
         _.forEach(nodeColumns, (column, i) => {
           _.forEach(column, (node, j) => {
             let [x, y] = canvasCoodinateSystem[i][j];
