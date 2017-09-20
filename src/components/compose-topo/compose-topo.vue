@@ -63,6 +63,7 @@ export default {
       return _.map(deployments, deployment => {
         return  {
           id: `Deployment_${deployment.metadata.name}`,
+          type: 'deployment',
           name: deployment.metadata.name,
           dependencies: getDeploymentDependencies(deployment),
           // 是否拥有依赖
@@ -83,8 +84,18 @@ export default {
 
       // 处理各个节点要展示的数据
       return _.map(services, service => {
+        function formatPort(port) {
+          const protocol = port.protocol === 'UDP' ? 'UDP' : 'TCP';
+          const nodePort = port.nodePort ? `${port.nodePort}:` : '';
+          return `${nodePort}${port.port}/${protocol}`;
+        }
+        const typeTable = {
+          ClusterIP: '服务端口',
+          NodePort: '主机端口',
+        };
         return  {
           id: `Service_${service.metadata.name}`,
+          type: 'service',
           name: service.metadata.name,
           dependencies: [],
           // 是否拥有依赖
@@ -92,10 +103,8 @@ export default {
           // 是否是其他节点的依赖
           isDependency: false,
           values: [
-            ['镜像', _.get(service, 'spec.template.spec.containers[0].image', '')],
-            ['实例数', _.get(service, 'spec.replicas', 0)],
-            ['CPU 限制', _.get(service, 'spec.template.spec.containers[0].resources.limits.cpu', 0)],
-            ['内存限制', _.get(service, 'spec.template.spec.containers[0].resources.limits.memory', 0)],
+            ['模式', typeTable[_.get(service, 'spec.type', 'ClusterIP')]],
+            ['端口', _.map(_.get(service, 'spec.ports', []), formatPort).join(',')],
           ],
         };
       });
