@@ -1,5 +1,6 @@
 <template>
   <div class="topo-node"
+    :class="info.type"
     ref="topoNode"
     v-stream:mousedown="mousedown$">
     <header class="topo-node-header">

@@ -19,6 +19,22 @@ $pivotOffsetXLarge: $topoNodeHeaderWidth - $pivotOffsetXSmall - $pivotWidth;
     border-color: black;
     box-shadow: 0 0 0 6px #4892db;
   }
+  &.service {
+    .topo-node-header {
+      background-color: #a330ec;
+    }
+    .topo-node-body {
+      background-color: #9026d4;
+    }
+  }
+  &.storage {
+    .topo-node-header {
+      background-color: #128bf1;
+    }
+    .topo-node-body {
+      background-color: #128bf1;
+    }
+  }
 }
 
 .topo-node-header {
