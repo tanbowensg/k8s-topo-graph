@@ -10,8 +10,8 @@
         </ul>
       </header>
       <div id="dce-compose-topo-body">
-        <topo-canvas v-if="tab === 'deployments'" :nodes="deployments"></topo-canvas>
-        <topo-canvas v-if="tab === 'services'" :nodes="services"></topo-canvas>
+        <topo-canvas v-if="tab === 'deployments'" :nodes="deployments" key="deployments"></topo-canvas>
+        <topo-canvas v-if="tab === 'services'" :nodes="services" key="services"></topo-canvas>
         <code-section :yaml="yaml"></code-section>
       </div>
     </div>
