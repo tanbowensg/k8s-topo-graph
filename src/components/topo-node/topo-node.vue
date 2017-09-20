@@ -58,7 +58,7 @@ export default {
     emitMovement(newPosition) {
       // 只要通知最后位移的距离就可以了
       const payload = {
-        name: this.info.name,
+        id: this.info.id,
         x: newPosition.x - this.x,
         y: newPosition.y - this.y
       };

@@ -10,7 +10,7 @@
         </ul>
       </header>
       <div id="dce-compose-topo-body">
-        <topo-canvas v-if="tab === 'deployments'" :nodes="deployments" key="deployments"></topo-canvas>
+        <topo-canvas v-if="tab === 'deployments'" :nodes="deploymentViewNodes" key="deployments"></topo-canvas>
         <topo-canvas v-if="tab === 'services'" :nodes="services" key="services"></topo-canvas>
         <code-section :yaml="yaml"></code-section>
       </div>
@@ -47,17 +47,13 @@ export default {
       return yaml2json.safeLoadAll(this.yaml);
     },
     deployments() {
-      function getDeploymentDependencies(deployment) {
-        return _.get(deployment, 'metadata.annotations["io.daocloud.dce/depend-on"]') || [];
-      }
-
       const deployments = _.filter(this.json, v => v.kind === 'Deployment');
 
-      // 先取出所有服务的依赖，用于判断一个服务是否有依赖
-      const allDependencies = _.reduce(deployments, (all, deployment) => {
-        const dependencies = getDeploymentDependencies(deployment);
-        return all.concat(dependencies)
-      }, [])
+      function getDeploymentDependencies(deployment) {
+        const dependencies =  _.get(deployment, 'metadata.annotations["io.daocloud.dce/depend-on"]') || [];
+        // yaml 里本来保存的是名字，这里要转换成 ID，由于这里都是服务和服务的依赖，所以就不判断 kind 了
+        return _.map(dependencies, dName => `Deployment_${dName}`);
+      }
 
       // 处理各个节点要展示的数据
       return _.map(deployments, deployment => {
@@ -66,10 +62,6 @@ export default {
           type: 'deployment',
           name: deployment.metadata.name,
           dependencies: getDeploymentDependencies(deployment),
-          // 是否拥有依赖
-          hasDependency: getDeploymentDependencies(deployment).length > 0,
-          // 是否是其他节点的依赖
-          isDependency: allDependencies.indexOf(deployment.metadata.name) > -1,
           values: [
             ['镜像', _.get(deployment, 'spec.template.spec.containers[0].image', '')],
             ['实例数', _.get(deployment, 'spec.replicas', 0)],
@@ -77,6 +69,23 @@ export default {
             ['内存限制', _.get(deployment, 'spec.template.spec.containers[0].resources.limits.memory', 0)],
           ],
         };
+      });
+    },
+    // 服务视图所需的节点和依赖关系
+    deploymentViewNodes() {
+      // 先取出所有服务的依赖，用于判断一个服务是否有依赖
+      const allDependencies = _.reduce(this.deployments, (all, deployment) => {
+        return all.concat(deployment.dependencies)
+      }, [])
+
+      // 处理各个节点要展示的数据
+      return _.map(this.deployments, deployment => {
+        const d = _.clone(deployment);
+        // 是否拥有依赖
+        d.hasDependency = d.dependencies.length > 0;
+        // 是否是其他节点的依赖
+        d.isDependency = allDependencies.indexOf(deployment.id) > -1;
+        return d;
       });
     },
     services() {

@@ -9,10 +9,10 @@
         :key="node.id"
         :info="node"
         :class="{active: activeNode === node.id}"
-        :style="convertPositionToTransform(nodePositions[node.name])"
+        :style="convertPositionToTransform(nodePositions[node.id])"
         :zoomRatio="zoomRatio"
-        :x="nodePositions[node.name].x"
-        :y="nodePositions[node.name].y"
+        :x="nodePositions[node.id].x"
+        :y="nodePositions[node.id].y"
         @move="onNodeMove"></topo-node>
       <svg id="canvas-lines" xmlns="http://www.w3.org/2000/svg" version="1.1" class="viewport"
           width="100%" height="100%">
@@ -47,7 +47,7 @@ export default {
     // 注意：这里的位置是每个节点左上角的位置，没有加偏移量
     const nodePositions = {};
     _.forEach(this.nodes, n => {
-      nodePositions[n.name] = {x: 0, y: 0};
+      nodePositions[n.id] = {x: 0, y: 0};
     });
 
     return {
@@ -81,7 +81,7 @@ export default {
       const dependencyGraph = {};
       // 这里和上面我总共遍历了两次，其实可以合并。但我不合并的理由是看起来更清楚一点，而且对性能影响不大。
       _.forEach(this.nodes, n => {
-        dependencyGraph[n.name] = n.dependencies;
+        dependencyGraph[n.id] = n.dependencies;
       })
       return dependencyGraph;
     },
@@ -168,9 +168,9 @@ export default {
       return `transform: translate(${x}px, ${y}px)`
     },
     // 更新移动的节点的位置
-    onNodeMove({name, x, y}) {
-      this.nodePositions[name].x = this.nodePositions[name].x + x;
-      this.nodePositions[name].y = this.nodePositions[name].y + y;
+    onNodeMove({id, x, y}) {
+      this.nodePositions[id].x = this.nodePositions[id].x + x;
+      this.nodePositions[id].y = this.nodePositions[id].y + y;
     },
     onActivateNode(nodeId) {
       this.activeNode = nodeId;
@@ -183,17 +183,19 @@ export default {
       // 计算每个节点的依赖层级，没有依赖关系的节点不在这个层级中
       // TODO: 听说可以用沃舍尔算法，有空优化
       function computeDependenciesLevel(graph, nodes) {
-        const allNodesName = _.map(nodes, node => node.name);
+        const allNodesId = _.map(nodes, node => node.id);
         // memoTable 是保存每个节点依赖层级的表
         const memoTable = {};
         // nodesParent 保存每个节点的父节点
         const nodesParent = {};
         // yaml 是不会有循环依赖的，所以这里也不考虑环
         _.forEach(graph, (dependencies, node) => {
+          console.log(dependencies, node)
           if (!memoTable[node]) memoTable[node] = 0;
           if (!nodesParent[node]) nodesParent[node] = null;
           _.forEach(dependencies, dependency => {
             // 父节点是会变的
+            console.log(dependency)
             nodesParent[dependency] = node;
             // 当前节点的依赖等级在它父节点的基础上加一
             memoTable[dependency] = memoTable[node] + 1
@@ -203,6 +205,7 @@ export default {
         // 所以最后要根据 nodesParent 和 memoTable 重新计算依赖等级
         // 但是首先要对 memoTable 进行排序，先计算层级低的，再计算层级高的
         const memoTableSorted = _.chain(memoTable).toPairs().sortBy(_.last).value();
+        console.log('memoTableSorted', memoTableSorted)
         const result = {};
         _.forEach(memoTableSorted, ([node, level], index) => {
           const parent = nodesParent[node];
@@ -323,6 +326,7 @@ export default {
       }
 
       const dependenciesLevel = computeDependenciesLevel(this.dependencyGraph, nodes);
+      console.log('dependenciesLevel', dependenciesLevel)
       const dependencySize = computeDependencySize(dependenciesLevel)
       const canvasCoodinateSystem = divideCanvas(dependencySize);
       Bus.$emit('zoom-ratio-change', canvasCoodinateSystem.ratio);
