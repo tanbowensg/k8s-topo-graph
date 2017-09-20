@@ -50,7 +50,9 @@ export default {
       });
     });
     Bus.$on('activate-node', nodeId => {
-      this.highlightCode(_.find(this.codeFragments, { id: nodeId }));
+      const target = _.find(this.codeFragments, { id: nodeId });
+      // 由于存储没有自己专属的代码块，所以这种情况就不跳转。有自己的代码块的情况下才跳转
+      if (target) this.highlightCode(target);
     });
   },
   mounted() {
