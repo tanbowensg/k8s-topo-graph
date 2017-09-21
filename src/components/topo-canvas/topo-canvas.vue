@@ -329,6 +329,17 @@ export default {
       return mapToCoodinateToNodes(dependenciesLevel, canvasCoodinateSystem.canvasDivisions);
     },
   },
+  watch: {
+    nodes() {
+      // 监听 nodes 的变化，如果新传进来的 nodes 出现了一些原本没有的 nodes，或者一些本来有的 nodes 没有了
+      // 那么就要把旧的 nodes 从 nodePositions 里弄出去，把新的加进来
+      _.forEach(this.nodes, newNode => {
+        if (!this.nodePositions[newNode.id]) {
+          this.$set(this.nodePositions, newNode.id, {x: 0, y: 0});
+        }
+      });
+    },
+  },
 }
 </script>
 
