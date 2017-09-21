@@ -151,6 +151,11 @@ export default {
       }
     },
   },
+  watch: {
+    yaml() {
+      this.codeFragments = this.getNodeFragments();
+    },
+  },
 }
 </script>
 
